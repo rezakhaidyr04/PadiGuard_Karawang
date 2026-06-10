@@ -1,0 +1,86 @@
+name: karawang_agrobrain
+description: AI Smart Farming Asisten Berbasis Smartphone untuk Kabupaten Karawang
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.0.0
+
+# FLUTLAB OPTIMIZED - Lightweight version for online IDE
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase (Cloud-compatible)
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.14.0
+  cloud_firestore: ^4.13.0
+  firebase_storage: ^11.5.0
+  cloud_functions: ^4.5.0
+
+  # State Management
+  riverpod: ^2.4.0
+  flutter_riverpod: ^2.4.0
+  provider: ^6.0.9
+
+  # Networking & API
+  dio: ^5.3.1
+  http: ^1.1.0
+
+  # UI/UX (Lightweight)
+  cupertino_icons: ^1.0.2
+  shimmer: ^3.0.0
+  lottie: ^2.6.0
+  google_fonts: ^6.1.0
+  fl_chart: ^0.63.0
+
+  # Local Storage
+  shared_preferences: ^2.2.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Utilities
+  logger: ^2.0.1
+  intl: ^0.19.0
+  uuid: ^4.0.0
+
+  # Image handling (lightweight)
+  image: ^4.1.0
+
+  # ❌ REMOVED FOR FLUTLAB:
+  # - tflite_flutter (native compilation required)
+  # - camera (native code + permissions)
+  # - image_picker (native code)
+  # - google_maps_flutter (native code + API key)
+  # - geolocator (GPS + permissions)
+  # - permission_handler (device permissions)
+  # - connectivity_plus (native implementation)
+  # - firebase_messaging (native code)
+  # - firebase_analytics (native code)
+  # - cached_network_image (optional, use simple Image.network)
+  # - get (navigation - using Navigator instead)
+  # - animated_splash_screen (simple animation instead)
+  # - smooth_page_indicator (custom implementation)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.6
+
+flutter:
+  uses-material-design: true
+
+  # Minimal assets - adjust path as needed
+  # assets:
+  #   - assets/
+  #   - assets/images/
+  #   - assets/models/
+
+# Migration Guide:
+# 1. Replace pubspec.yaml with this file
+# 2. Run: flutter pub get
+# 3. Remove imports for removed packages
+# 4. Replace package functionality with built-ins
+# 5. Run: flutter run

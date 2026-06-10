@@ -1,0 +1,62 @@
+name: karawang_agrobrain
+description: AI Smart Farming Asisten Berbasis Smartphone untuk Kabupaten Karawang
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.0.0
+
+# FLUTLAB OPTIMIZED - Lightweight version for online IDE
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase (Cloud-compatible)
+  firebase_core: ^4.10.0
+  firebase_auth: ^6.5.2
+  cloud_firestore: ^6.5.0
+  cloud_functions: ^6.3.2
+
+  # State Management
+  flutter_riverpod: ^2.4.0
+
+  # Networking & API
+  dio: ^5.3.1
+
+  # UI/UX
+  cupertino_icons: ^1.0.2
+
+  # Utilities
+  logger: ^2.0.1
+
+  # Image handling
+  image: ^4.1.0
+  image_picker: ^1.0.7
+
+  # ❌ REMOVED FOR FLUTLAB:
+  # - tflite_flutter (native compilation required)
+  # - camera (native code + permissions)
+  # - image_picker (native code)
+  # - google_maps_flutter (native code + API key)
+  # - geolocator (GPS + permissions)
+  # - permission_handler (device permissions)
+  # - connectivity_plus (native implementation)
+  # - firebase_messaging (native code)
+  # - firebase_analytics (native code)
+  # - cached_network_image (optional, use simple Image.network)
+  # - get (navigation - using Navigator instead)
+  # - animated_splash_screen (simple animation instead)
+  # - smooth_page_indicator (custom implementation)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.6
+
+flutter:
+  uses-material-design: true
+
+# Minimal: do not hardcode assets in flutlab optimized pubspec
+
