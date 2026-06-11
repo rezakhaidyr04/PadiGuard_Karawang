@@ -207,7 +207,8 @@ class _DiseaseDetectionScreenState
                 _statsBadge('Total Scan', '$totalScans', Colors.blue),
                 _statsBadge('Risiko Tinggi', '$highRiskCount', Colors.red),
                 _statsBadge('Risiko Sedang', '$mediumRiskCount', Colors.orange),
-                _statsBadge('Tanaman Sehat', '$healthyCount', Colors.green),
+                _statsBadge(
+                    'Tanaman Sehat', '$healthyCount', AppColors.primary),
               ],
             ),
             const SizedBox(height: 24),
@@ -286,8 +287,8 @@ class _DiseaseDetectionScreenState
               shape: BoxShape.circle,
             ),
             child: const Center(
-              child: Icon(Icons.sync_rounded,
-                  color: AppColors.primary, size: 34),
+              child:
+                  Icon(Icons.sync_rounded, color: AppColors.primary, size: 34),
             ),
           ),
           const SizedBox(height: 18),
@@ -541,7 +542,7 @@ class _DiseaseDetectionScreenState
   }
 
   void _showDiagnosisResultDialog(HamaModel hama) {
-    Color riskColor = Colors.green;
+    Color riskColor = AppColors.primary;
     if (hama.tingkatRisiko == 'TINGGI') {
       riskColor = Colors.red;
     } else if (hama.tingkatRisiko == 'SEDANG') {
@@ -699,7 +700,7 @@ class _DiseaseDetectionScreenState
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final scan = scans[index];
-        Color riskColor = Colors.green;
+        Color riskColor = AppColors.primary;
         if (scan.tingkatRisiko == 'TINGGI') {
           riskColor = Colors.red;
         } else if (scan.tingkatRisiko == 'SEDANG') {

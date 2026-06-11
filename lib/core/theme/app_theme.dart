@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 /// App Color Palette
 class AppColors {
-  // Primary Colors (Green theme - Agriculture)
-  static const Color primary = Color(0xFF2E7D32); // Deep green
-  static const Color primaryLight = Color(0xFF66BB6A); // Light green
-  static const Color primaryDark = Color(0xFF1B5E20); // Very dark green
+  // Primary Colors (Blue theme)
+  static const Color primary = Color(0xFF1976D2); // Blue 700
+  static const Color primaryLight = Color(0xFF63A4FF); // Light blue
+  static const Color primaryDark = Color(0xFF115293); // Darker blue
 
   // Secondary Colors
   static const Color secondary = Color(0xFFF57C00); // Orange (harvest/warning)

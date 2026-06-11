@@ -151,7 +151,7 @@ class _HamaScanScreenState extends State<HamaScanScreen> {
 
   Widget _buildRiskBadge(String riskLevel) {
     final colors = {
-      'RENDAH': Colors.green,
+      'RENDAH': AppColors.primary,
       'SEDANG': Colors.orange,
       'TINGGI': Colors.red,
     };
@@ -274,7 +274,7 @@ class _HamaScanScreenState extends State<HamaScanScreen> {
   Color _getRiskColor(String riskLevel) {
     switch (riskLevel) {
       case 'RENDAH':
-        return Colors.green;
+        return AppColors.primary;
       case 'SEDANG':
         return Colors.orange;
       case 'TINGGI':

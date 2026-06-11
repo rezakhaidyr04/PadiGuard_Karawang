@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 // constants not required here
-import '../field_management/sawah_screen.dart';
 import '../disease_detection/disease_detection_screen.dart';
 import '../chatbot/chatbot_screen.dart';
 import '../market/market_screen.dart';
@@ -25,7 +24,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.initState();
     _pages = [
       const HomeTab(),
-      const SawahScreen(),
       const DiseaseDetectionScreen(),
       const ChatbotScreen(),
       const MarketScreen(),
@@ -66,14 +64,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               children: [
                 _buildNavItem(0, Icons.dashboard_rounded,
                     Icons.dashboard_outlined, 'Dashboard'),
-                _buildNavItem(1, Icons.agriculture_rounded,
-                    Icons.agriculture_outlined, 'Sawah'),
-                _buildNavItem(2, Icons.bug_report_rounded,
+                _buildNavItem(1, Icons.bug_report_rounded,
                     Icons.bug_report_outlined, 'Hama'),
-                _buildNavItem(3, Icons.chat_bubble_rounded,
+                _buildNavItem(2, Icons.chat_bubble_rounded,
                     Icons.chat_bubble_outlined, 'Chatbot'),
                 _buildNavItem(
-                    4, Icons.store_rounded, Icons.store_outlined, 'Pasar'),
+                    3, Icons.store_rounded, Icons.store_outlined, 'Pasar'),
               ],
             ),
           ),
@@ -428,11 +424,42 @@ class HomeTab extends ConsumerWidget {
                           context,
                           icon: Icons.add_circle_outline_rounded,
                           label: 'Tambah\nSawah',
-                          color: Colors.green,
+                          color: AppColors.primary,
                           onTap: () {
-                            final dashboard = context
-                                .findAncestorStateOfType<_DashboardScreenState>();
-                            dashboard?.navigateToTab(1);
+                            final now = DateTime.now();
+                            final demo = SawahModel(
+                              id: 'sawah-demo-${now.millisecondsSinceEpoch}',
+                              userId: 'demo-user',
+                              nama: 'Sawah Demo Cepat',
+                              latitude: -6.3245,
+                              longitude: 107.3025,
+                              luasHektar: 1.0,
+                              jenisTanaman: 'Ciherang',
+                              tanggalTanam:
+                                  now.subtract(const Duration(days: 30)),
+                              tanggalPanenExpected:
+                                  now.add(const Duration(days: 85)),
+                              umurTanamanHari: 30,
+                              kelembaban: 72.0,
+                              ph: 6.4,
+                              temperatureCelsius: 29.0,
+                              jenisAirTanah: 'Lempung',
+                              ketersediaanAir: 'Lancar',
+                              status: 'growing',
+                              statusKesehatan: 'Sehat',
+                              skorRisiko: 8,
+                              idLogHama: const [],
+                              createdAt: now,
+                              updatedAt: now,
+                            );
+
+                            ref
+                                .read(sawahStateProvider.notifier)
+                                .addSawah(demo);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('✓ Sawah demo ditambahkan')),
+                            );
                           },
                         ),
                       ),
@@ -444,9 +471,9 @@ class HomeTab extends ConsumerWidget {
                           label: 'Pindai\nDaun',
                           color: Colors.orange,
                           onTap: () {
-                            final dashboard = context
-                                .findAncestorStateOfType<_DashboardScreenState>();
-                            dashboard?.navigateToTab(2);
+                            final dashboard = context.findAncestorStateOfType<
+                                _DashboardScreenState>();
+                            dashboard?.navigateToTab(1);
                           },
                         ),
                       ),
@@ -458,9 +485,9 @@ class HomeTab extends ConsumerWidget {
                           label: 'Tanya\nAI',
                           color: Colors.blue,
                           onTap: () {
-                            final dashboard = context
-                                .findAncestorStateOfType<_DashboardScreenState>();
-                            dashboard?.navigateToTab(3);
+                            final dashboard = context.findAncestorStateOfType<
+                                _DashboardScreenState>();
+                            dashboard?.navigateToTab(2);
                           },
                         ),
                       ),
@@ -472,9 +499,9 @@ class HomeTab extends ConsumerWidget {
                           label: 'Harga\nPasar',
                           color: Colors.purple,
                           onTap: () {
-                            final dashboard = context
-                                .findAncestorStateOfType<_DashboardScreenState>();
-                            dashboard?.navigateToTab(4);
+                            final dashboard = context.findAncestorStateOfType<
+                                _DashboardScreenState>();
+                            dashboard?.navigateToTab(3);
                           },
                         ),
                       ),
@@ -526,7 +553,7 @@ class HomeTab extends ConsumerWidget {
                           onTap: () {
                             final dashboard = context.findAncestorStateOfType<
                                 _DashboardScreenState>();
-                            dashboard?.navigateToTab(4); // Go to Pasar
+                            dashboard?.navigateToTab(3); // Go to Pasar
                           },
                         ),
                       ),
@@ -561,7 +588,7 @@ class HomeTab extends ConsumerWidget {
                           final dashboard = context
                               .findAncestorStateOfType<_DashboardScreenState>();
                           dashboard
-                              ?.navigateToTab(2); // Go to pest scan history
+                              ?.navigateToTab(1); // Go to pest scan history
                         },
                         child: const Text('Semua Riwayat',
                             style: TextStyle(
@@ -591,7 +618,7 @@ class HomeTab extends ConsumerWidget {
                                 (scanHistory.length < 3
                                     ? scanHistory.length - 1
                                     : 2);
-                            Color riskColor = Colors.green;
+                            Color riskColor = AppColors.primary;
                             if (scan.tingkatRisiko == 'TINGGI') {
                               riskColor = Colors.red;
                             } else if (scan.tingkatRisiko == 'SEDANG') {
@@ -756,7 +783,8 @@ class HomeTab extends ConsumerWidget {
                   offset: const Offset(0, 4),
                 ),
               ],
-              border: Border.all(color: color.withValues(alpha: 0.1), width: 1.5),
+              border:
+                  Border.all(color: color.withValues(alpha: 0.1), width: 1.5),
             ),
             child: Icon(icon, color: color, size: 26),
           ),
@@ -955,7 +983,7 @@ class HomeTab extends ConsumerWidget {
                     desc:
                         'Jadwal pemupukan Urea susulan untuk Sawah Utama - Telukjambe (HST 45) direkomendasikan hari ini.',
                     time: 'Baru saja',
-                    color: Colors.green,
+                    color: AppColors.primary,
                   ),
                   _notifItem(
                     context,
@@ -1220,7 +1248,8 @@ class HomeTab extends ConsumerWidget {
                               color: AppColors.primary.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.2)),
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.2)),
                             ),
                             child: Row(
                               children: [
