@@ -118,7 +118,7 @@ class SawahScreen extends ConsumerWidget {
                       ],
                     ),
                     ElevatedButton.icon(
-                      onPressed: () => _showAddSawahDialog(context, ref),
+                      onPressed: () => showAddSawahDialog(context, ref),
                       icon:
                           const Icon(Icons.add, size: 18, color: Colors.white),
                       label: const Text(
@@ -716,11 +716,9 @@ class SawahScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddSawahDialog(BuildContext context, WidgetRef ref) {
+  static void showAddSawahDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final areaController = TextEditingController();
-    final latController = TextEditingController();
-    final lonController = TextEditingController();
 
     String? selectedPadi = 'Ciherang';
     DateTime selectedDate = DateTime.now();
@@ -829,7 +827,7 @@ class SawahScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Varietas Padi',
+                            const Text('Jenis Padi',
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 12)),
                             const SizedBox(height: 6),
@@ -849,7 +847,7 @@ class SawahScreen extends ConsumerWidget {
                                     'Inpari 32',
                                     'IR64',
                                     'Pandan Wangi',
-                                    'Ketam Hitam'
+                                    'Ketan Hitam'
                                   ]
                                       .map((p) => DropdownMenuItem(
                                           value: p, child: Text(p)))
@@ -864,80 +862,7 @@ class SawahScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Latitude',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12)),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: latController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true),
-                              decoration: const InputDecoration(
-                                hintText:
-                                    'Contoh: ${AppConstants.karawangLatitude}',
-                                prefixIcon: Icon(Icons.map_outlined,
-                                    color: AppColors.primary),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Wajib diisi';
-                                }
-                                final parsed = double.tryParse(value);
-                                if (parsed == null || parsed < -90 || parsed > 90) {
-                                  return 'Harus -90 s/d 90';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Longitude',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12)),
-                            const SizedBox(height: 6),
-                            TextFormField(
-                              controller: lonController,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true),
-                              decoration: const InputDecoration(
-                                hintText:
-                                    'Contoh: ${AppConstants.karawangLongitude}',
-                                prefixIcon: Icon(Icons.map_outlined,
-                                    color: AppColors.primary),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Wajib diisi';
-                                }
-                                final parsed = double.tryParse(value);
-                                if (parsed == null || parsed < -180 || parsed > 180) {
-                                  return 'Harus -180 s/d 180';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+
                   const SizedBox(height: 16),
                   const Text('Tanggal Tanam',
                       style:
@@ -985,8 +910,8 @@ class SawahScreen extends ConsumerWidget {
                         if (!formKey.currentState!.validate()) return;
                         final name = nameController.text.trim();
                         final area = double.parse(areaController.text);
-                        final lat = double.parse(latController.text);
-                        final lon = double.parse(lonController.text);
+                        const lat = AppConstants.karawangLatitude;
+                        const lon = AppConstants.karawangLongitude;
                         final diffDays =
                             DateTime.now().difference(selectedDate).inDays;
 
@@ -1093,7 +1018,7 @@ class SawahScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              'Varietas: ${sawah.jenisTanaman} • ${sawah.luasHektar} Ha',
+              'Jenis Padi: ${sawah.jenisTanaman} • ${sawah.luasHektar} Ha',
               style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -1143,7 +1068,7 @@ class SawahScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             _calendarTimelineItem(
               title: 'Estimasi Waktu Panen Raya 🌾',
-              desc: 'Prediksi panen berdasarkan varietas padi.',
+              desc: 'Prediksi panen berdasarkan jenis padi.',
               date:
                   'Perkiraan Tanggal: ${sawah.tanggalPanenExpected.day}/${sawah.tanggalPanenExpected.month}/${sawah.tanggalPanenExpected.year}',
               color: Colors.purple,

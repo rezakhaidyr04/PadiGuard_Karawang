@@ -203,7 +203,7 @@ class HarvestPredictionScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Varietas: Padi ${sawah.jenisTanaman}',
+                  'Jenis Padi: Padi ${sawah.jenisTanaman}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,

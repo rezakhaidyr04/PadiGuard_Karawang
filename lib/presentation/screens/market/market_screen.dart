@@ -1103,7 +1103,7 @@ class MarketScreen extends ConsumerWidget {
                   _priceBreakdownItem('Harga Satuan', 'Rp ${item.harga.toStringAsFixed(0)}/kg'),
                   _priceBreakdownItem('Kuantitas', '${qty.toStringAsFixed(0)} kg'),
                   _priceBreakdownItem('Subtotal Produk', 'Rp ${subtotal.toStringAsFixed(0)}'),
-                  _priceBreakdownItem('Biaya Transport (${selectedTransport})', 'Rp ${transportFee.toStringAsFixed(0)}'),
+                  _priceBreakdownItem('Biaya Transport ($selectedTransport)', 'Rp ${transportFee.toStringAsFixed(0)}'),
                   const Divider(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1187,7 +1187,7 @@ class MarketScreen extends ConsumerWidget {
       'Saya tertarik membeli produk yang Anda tawarkan di PadiGuard Karawang:\n'
       '• Produk: ${item.namaProduk}\n'
       '• Jumlah: ${quantity.toStringAsFixed(0)} kg\n'
-      '• Pengiriman: ${transport}\n'
+      '• Pengiriman: $transport\n'
       '• Total Pembayaran: Rp ${total.toStringAsFixed(0)}\n\n'
       'Apakah stok tersebut masih tersedia dan bisa diproses? Terima kasih!';
 
@@ -1322,7 +1322,9 @@ class MarketScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
 }
+
 
 // ─── Custom Canvas Line Chart Painter ────────────────────────────────────────
 

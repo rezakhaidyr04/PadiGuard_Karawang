@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../disease_detection/disease_detection_screen.dart';
 import '../chatbot/chatbot_screen.dart';
 import '../market/market_screen.dart';
+import '../field_management/sawah_screen.dart';
 import '../../../data/models/sawah_model.dart';
 import '../../providers/app_state_providers.dart';
 
@@ -413,58 +414,19 @@ class HomeTab extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 14,
-                    runSpacing: 14,
-                    alignment: WrapAlignment.spaceBetween,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 80) / 4,
+                      Expanded(
                         child: _quickActionItem(
                           context,
                           icon: Icons.add_circle_outline_rounded,
                           label: 'Tambah\nSawah',
                           color: AppColors.primary,
-                          onTap: () {
-                            final now = DateTime.now();
-                            final demo = SawahModel(
-                              id: 'sawah-demo-${now.millisecondsSinceEpoch}',
-                              userId: 'demo-user',
-                              nama: 'Sawah Demo Cepat',
-                              latitude: -6.3245,
-                              longitude: 107.3025,
-                              luasHektar: 1.0,
-                              jenisTanaman: 'Ciherang',
-                              tanggalTanam:
-                                  now.subtract(const Duration(days: 30)),
-                              tanggalPanenExpected:
-                                  now.add(const Duration(days: 85)),
-                              umurTanamanHari: 30,
-                              kelembaban: 72.0,
-                              ph: 6.4,
-                              temperatureCelsius: 29.0,
-                              jenisAirTanah: 'Lempung',
-                              ketersediaanAir: 'Lancar',
-                              status: 'growing',
-                              statusKesehatan: 'Sehat',
-                              skorRisiko: 8,
-                              idLogHama: const [],
-                              createdAt: now,
-                              updatedAt: now,
-                            );
-
-                            ref
-                                .read(sawahStateProvider.notifier)
-                                .addSawah(demo);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('✓ Sawah demo ditambahkan')),
-                            );
-                          },
+                          onTap: () => SawahScreen.showAddSawahDialog(context, ref),
                         ),
                       ),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 80) / 4,
+                      Expanded(
                         child: _quickActionItem(
                           context,
                           icon: Icons.camera_alt_outlined,
@@ -477,8 +439,7 @@ class HomeTab extends ConsumerWidget {
                           },
                         ),
                       ),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 80) / 4,
+                      Expanded(
                         child: _quickActionItem(
                           context,
                           icon: Icons.chat_bubble_outline_rounded,
@@ -491,8 +452,7 @@ class HomeTab extends ConsumerWidget {
                           },
                         ),
                       ),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 80) / 4,
+                      Expanded(
                         child: _quickActionItem(
                           context,
                           icon: Icons.store_mall_directory_outlined,
@@ -791,6 +751,7 @@ class HomeTab extends ConsumerWidget {
           const SizedBox(height: 8),
           Text(
             label,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
@@ -1307,7 +1268,7 @@ class HomeTab extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Varietas Padi:',
+                              const Text('Jenis Padi:',
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary)),

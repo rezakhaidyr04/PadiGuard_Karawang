@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../data/models/hama_model.dart';
 import '../../../data/models/sawah_model.dart';
 import '../../providers/app_state_providers.dart';
+import '../field_management/sawah_screen.dart';
 
 class DiseaseDetectionScreen extends ConsumerStatefulWidget {
   const DiseaseDetectionScreen({super.key});
@@ -175,6 +176,19 @@ class _DiseaseDetectionScreenState
                               val;
                         },
                       ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => SawahScreen.showAddSawahDialog(context, ref),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.add,
+                          color: AppColors.primary, size: 18),
                     ),
                   ),
                 ],
