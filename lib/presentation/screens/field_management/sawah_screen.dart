@@ -724,6 +724,7 @@ class SawahScreen extends ConsumerWidget {
 
     String? selectedPadi = 'Ciherang';
     DateTime selectedDate = DateTime.now();
+    final formKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
       context: context,
@@ -745,267 +746,304 @@ class SawahScreen extends ConsumerWidget {
             top: 24,
           ),
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Daftarkan Sawah Baru 🌾',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins'),
-                    ),
-                    IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text('Nama Sawah',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Contoh: Sawah Utama Blok C',
-                    prefixIcon: Icon(Icons.agriculture_rounded,
-                        color: AppColors.primary),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Luas Sawah (Ha)',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12)),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: areaController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            decoration: const InputDecoration(
-                              hintText: 'Contoh: 1.5',
-                              prefixIcon: Icon(Icons.straighten_rounded,
-                                  color: AppColors.primary),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
-                            ),
-                          ),
-                        ],
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Daftarkan Sawah Baru 🌾',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins'),
                       ),
+                      IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Nama Sawah',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Contoh: Sawah Utama Blok C',
+                      prefixIcon: Icon(Icons.agriculture_rounded,
+                          color: AppColors.primary),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Varietas Padi',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12)),
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Nama sawah tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Luas Sawah (Ha)',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: areaController,
+                              keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              decoration: const InputDecoration(
+                                hintText: 'Contoh: 1.5',
+                                prefixIcon: Icon(Icons.straighten_rounded,
+                                    color: AppColors.primary),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Wajib diisi';
+                                }
+                                final parsed = double.tryParse(value);
+                                if (parsed == null || parsed <= 0) {
+                                  return 'Harus angka > 0';
+                                }
+                                return null;
+                              },
                             ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: selectedPadi,
-                                isExpanded: true,
-                                items: [
-                                  'Ciherang',
-                                  'Inpari 32',
-                                  'IR64',
-                                  'Pandan Wangi',
-                                  'Ketam Hitam'
-                                ]
-                                    .map((p) => DropdownMenuItem(
-                                        value: p, child: Text(p)))
-                                    .toList(),
-                                onChanged: (val) =>
-                                    setModalState(() => selectedPadi = val),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Varietas Padi',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceVariant,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: selectedPadi,
+                                  isExpanded: true,
+                                  items: [
+                                    'Ciherang',
+                                    'Inpari 32',
+                                    'IR64',
+                                    'Pandan Wangi',
+                                    'Ketam Hitam'
+                                  ]
+                                      .map((p) => DropdownMenuItem(
+                                          value: p, child: Text(p)))
+                                      .toList(),
+                                  onChanged: (val) =>
+                                      setModalState(() => selectedPadi = val),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Latitude',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12)),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: latController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            decoration: const InputDecoration(
-                              hintText:
-                                  'Contoh: ${AppConstants.karawangLatitude}',
-                              prefixIcon: Icon(Icons.map_outlined,
-                                  color: AppColors.primary),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Longitude',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12)),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: lonController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            decoration: const InputDecoration(
-                              hintText:
-                                  'Contoh: ${AppConstants.karawangLongitude}',
-                              prefixIcon: Icon(Icons.map_outlined,
-                                  color: AppColors.primary),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text('Tanggal Tanam',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                InkWell(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate:
-                          DateTime.now().subtract(const Duration(days: 365)),
-                      lastDate: DateTime.now(),
-                    );
-                    if (date != null) {
-                      setModalState(() => selectedDate = date);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          ],
                         ),
-                        const Icon(Icons.calendar_today_rounded,
-                            size: 18, color: AppColors.primary),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (nameController.text.isEmpty) return;
-                      final name = nameController.text;
-                      final area = double.tryParse(areaController.text) ?? 1.0;
-                      final lat = double.tryParse(latController.text) ??
-                          AppConstants.karawangLatitude;
-                      final lon = double.tryParse(lonController.text) ??
-                          AppConstants.karawangLongitude;
-                      final diffDays =
-                          DateTime.now().difference(selectedDate).inDays;
-
-                      final newSawah = SawahModel(
-                        id: 'sawah-${DateTime.now().millisecondsSinceEpoch}',
-                        userId: 'user-001',
-                        nama: name,
-                        latitude: lat,
-                        longitude: lon,
-                        luasHektar: area,
-                        jenisTanaman: selectedPadi!,
-                        tanggalTanam: selectedDate,
-                        tanggalPanenExpected:
-                            selectedDate.add(const Duration(days: 115)),
-                        umurTanamanHari: diffDays,
-                        kelembaban: 70.0,
-                        ph: 6.5,
-                        temperatureCelsius: 29.0,
-                        jenisAirTanah: 'Lempung Liat',
-                        ketersediaanAir: 'Lancar',
-                        status: diffDays >= 90
-                            ? 'matang'
-                            : diffDays >= 61
-                                ? 'generatif'
-                                : 'growing',
-                        statusKesehatan: 'Sehat',
-                        skorRisiko: 5,
-                        idLogHama: const [],
-                        createdAt: DateTime.now(),
-                        updatedAt: DateTime.now(),
-                      );
-
-                      ref.read(sawahStateProvider.notifier).addSawah(newSawah);
-                      Navigator.pop(context);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✓ Sawah Baru Berhasil Didaftarkan!'),
-                          backgroundColor: AppColors.primary,
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Latitude',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: latController,
+                              keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              decoration: const InputDecoration(
+                                hintText:
+                                    'Contoh: ${AppConstants.karawangLatitude}',
+                                prefixIcon: Icon(Icons.map_outlined,
+                                    color: AppColors.primary),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Wajib diisi';
+                                }
+                                final parsed = double.tryParse(value);
+                                if (parsed == null || parsed < -90 || parsed > 90) {
+                                  return 'Harus -90 s/d 90';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                         ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Longitude',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: lonController,
+                              keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              decoration: const InputDecoration(
+                                hintText:
+                                    'Contoh: ${AppConstants.karawangLongitude}',
+                                prefixIcon: Icon(Icons.map_outlined,
+                                    color: AppColors.primary),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Wajib diisi';
+                                }
+                                final parsed = double.tryParse(value);
+                                if (parsed == null || parsed < -180 || parsed > 180) {
+                                  return 'Harus -180 s/d 180';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Tanggal Tanam',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now(),
                       );
+                      if (date != null) {
+                        setModalState(() => selectedDate = date);
+                      }
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                    ),
-                    child: const Text(
-                      'Simpan Lahan Sawah',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const Icon(Icons.calendar_today_rounded,
+                              size: 18, color: AppColors.primary),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (!formKey.currentState!.validate()) return;
+                        final name = nameController.text.trim();
+                        final area = double.parse(areaController.text);
+                        final lat = double.parse(latController.text);
+                        final lon = double.parse(lonController.text);
+                        final diffDays =
+                            DateTime.now().difference(selectedDate).inDays;
+
+                        final newSawah = SawahModel(
+                          id: 'sawah-${DateTime.now().millisecondsSinceEpoch}',
+                          userId: 'user-001',
+                          nama: name,
+                          latitude: lat,
+                          longitude: lon,
+                          luasHektar: area,
+                          jenisTanaman: selectedPadi!,
+                          tanggalTanam: selectedDate,
+                          tanggalPanenExpected:
+                              selectedDate.add(const Duration(days: 115)),
+                          umurTanamanHari: diffDays,
+                          kelembaban: 70.0,
+                          ph: 6.5,
+                          temperatureCelsius: 29.0,
+                          jenisAirTanah: 'Lempung Liat',
+                          ketersediaanAir: 'Lancar',
+                          status: diffDays >= 90
+                              ? 'matang'
+                              : diffDays >= 61
+                                  ? 'generatif'
+                                  : 'growing',
+                          statusKesehatan: 'Sehat',
+                          skorRisiko: 5,
+                          idLogHama: const [],
+                          createdAt: DateTime.now(),
+                          updatedAt: DateTime.now(),
+                        );
+
+                        ref.read(sawahStateProvider.notifier).addSawah(newSawah);
+                        Navigator.pop(context);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('✓ Sawah Baru Berhasil Didaftarkan!'),
+                            backgroundColor: AppColors.primary,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: const Text(
+                        'Simpan Lahan Sawah',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

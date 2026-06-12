@@ -259,21 +259,23 @@ class ChatbotNotifier extends StateNotifier<List<Map<String, dynamic>>> {
     state = _initialMessages();
   }
 
-  Future<void> generateBotResponse(String query, String apiKey) async {
+  Future<void> generateBotResponse(
+    String query, {
+    required String ollamaHost,
+    required String ollamaModel,
+  }) async {
     final normalized = query.toLowerCase();
 
     // 1) Preferred: Local generative LLM via Ollama (offline)
     try {
       final ollama = LocalOllamaChatService();
-      // baseUrl & model are configurable via providers (but generateBotResponse
-      // currently receives only query+apiKey). We therefore keep default
-      // values here; UI can be extended later to pass them.
-      const ollamaBaseUrl = 'http://127.0.0.1:11434';
-      const ollamaModel = 'llama3';
+      // baseUrl & model are configured dynamically from UI
+      final ollamaBaseUrl = ollamaHost;
+      final ollamaModelName = ollamaModel;
 
       final responseText = await ollama.generate(
         baseUrl: ollamaBaseUrl,
-        model: ollamaModel,
+        model: ollamaModelName,
         query: query,
         contextText: null,
       );
@@ -376,6 +378,7 @@ class MarketItem {
   final double harga;
   final String penjual;
   final String telepon;
+  final String lokasi;
   final String tanggal;
 
   MarketItem({
@@ -386,6 +389,7 @@ class MarketItem {
     required this.harga,
     required this.penjual,
     required this.telepon,
+    required this.lokasi,
     required this.tanggal,
   });
 }
@@ -403,6 +407,7 @@ class MarketNotifier extends StateNotifier<List<MarketItem>> {
         harga: 14000.0,
         penjual: 'Bapak Jaka Supriadi',
         telepon: '08123456789',
+        lokasi: 'Telukjambe Timur',
         tanggal: 'Hari ini',
       ),
       MarketItem(
@@ -413,6 +418,7 @@ class MarketNotifier extends StateNotifier<List<MarketItem>> {
         harga: 6800.0,
         penjual: 'Ibu Ningsih (Poktan Telukjambe)',
         telepon: '08579998881',
+        lokasi: 'Tempuran',
         tanggal: 'Kemarin',
       ),
       MarketItem(
@@ -423,6 +429,7 @@ class MarketNotifier extends StateNotifier<List<MarketItem>> {
         harga: 16500.0,
         penjual: 'Pak Slamet',
         telepon: '08988877712',
+        lokasi: 'Cilamaya Wetan',
         tanggal: '2 hari lalu',
       ),
       MarketItem(
@@ -433,6 +440,7 @@ class MarketNotifier extends StateNotifier<List<MarketItem>> {
         harga: 5700.0,
         penjual: 'Bapak Dadang',
         telepon: '08132223334',
+        lokasi: 'Rengasdengklok',
         tanggal: '3 hari lalu',
       ),
     ];

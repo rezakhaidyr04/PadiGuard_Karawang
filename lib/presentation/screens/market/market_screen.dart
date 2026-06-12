@@ -602,33 +602,47 @@ class MarketScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.person,
-                            size: 14, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          item.penjual.length > 15
-                              ? '${item.penjual.substring(0, 13)}...'
-                              : item.penjual,
-                          style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.textSecondary,
-                              fontFamily: 'InterTight'),
-                        ),
-                      ],
-                    ),
-                    InkWell(
-                      onTap: () {
-                        // Action to call/WA seller
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Menghubungi ${item.penjual} di ${item.telepon}...'),
-                            backgroundColor: AppColors.primary,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.person,
+                              size: 14, color: AppColors.textSecondary),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              item.penjual.length > 12
+                                  ? '${item.penjual.substring(0, 10)}...'
+                                  : item.penjual,
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                  fontFamily: 'InterTight'),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        );
-                      },
+                          const SizedBox(width: 4),
+                          const Text('•', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.location_on_outlined,
+                              size: 12, color: AppColors.primary),
+                          const SizedBox(width: 2),
+                          Flexible(
+                            child: Text(
+                              item.lokasi,
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'InterTight'),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    InkWell(
+                      onTap: () => _showPurchaseDetailsBottomSheet(context, item),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
@@ -638,10 +652,10 @@ class MarketScreen extends ConsumerWidget {
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.phone_rounded,
+                            Icon(Icons.shopping_cart_outlined,
                                 color: AppColors.primary, size: 12),
                             SizedBox(width: 4),
-                            Text('Hubungi',
+                            Text('Beli',
                                 style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -667,6 +681,7 @@ class MarketScreen extends ConsumerWidget {
     final priceController = TextEditingController();
     final sellerController = TextEditingController();
     final phoneController = TextEditingController();
+    final locationController = TextEditingController();
     String? selectedType = 'Beras';
 
     showModalBottomSheet(
@@ -799,15 +814,39 @@ class MarketScreen extends ConsumerWidget {
                       const InputDecoration(hintText: 'Contoh: Pak Tarno'),
                 ),
                 const SizedBox(height: 14),
-                const Text('Nomor WA / Telepon',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration:
-                      const InputDecoration(hintText: 'Contoh: 0812xxxxxxxx'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Nomor WA / Telepon',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(hintText: 'Contoh: 0812xxxxxxxx'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Lokasi Kecamatan',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          const SizedBox(height: 6),
+                          TextField(
+                            controller: locationController,
+                            decoration: const InputDecoration(hintText: 'Contoh: Tempuran'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
 
@@ -832,6 +871,9 @@ class MarketScreen extends ConsumerWidget {
                       telepon: phoneController.text.isEmpty
                           ? '08123456789'
                           : phoneController.text,
+                      lokasi: locationController.text.isEmpty
+                          ? 'Karawang'
+                          : locationController.text,
                       tanggal: 'Hari ini',
                     );
 
@@ -862,6 +904,424 @@ class MarketScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _showPurchaseDetailsBottomSheet(BuildContext context, MarketItem item) {
+    // Parse quantity number from string like "500 kg" -> 500.0, or default to 100.0
+    final stockString = item.kuantitas.replaceAll(RegExp(r'[^0-9.]'), '');
+    final double maxStock = double.tryParse(stockString) ?? 100.0;
+    
+    final quantityController = TextEditingController(text: maxStock > 100 ? '100' : maxStock.toStringAsFixed(0));
+    String selectedTransport = 'Ambil Sendiri';
+    double transportFee = 0.0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final double qty = double.tryParse(quantityController.text) ?? 0.0;
+          final double subtotal = qty * item.harga;
+          final double total = subtotal + transportFee;
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              left: 20,
+              right: 20,
+              top: 24,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Rincian Pembelian Produk 🌾',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins'),
+                      ),
+                      IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Product Summary
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: item.jenis == 'Beras'
+                                ? Colors.amber.withValues(alpha: 0.1)
+                                : Colors.orange.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            item.jenis == 'Beras'
+                                ? Icons.rice_bowl_rounded
+                                : Icons.grain_rounded,
+                            color: item.jenis == 'Beras' ? Colors.amber : Colors.orange,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.namaProduk,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    fontFamily: 'Poppins'),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Penjual: ${item.penjual} • 📍 ${item.lokasi}',
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                    fontFamily: 'InterTight'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Quantity input
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Jumlah Pembelian (kg)',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12)),
+                          const SizedBox(height: 4),
+                          Text('Maks. Stok: ${item.kuantitas}',
+                              style: const TextStyle(
+                                  fontSize: 10, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                      SizedBox(
+                        width: 120,
+                        child: TextField(
+                          controller: quantityController,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          decoration: const InputDecoration(
+                            suffixText: ' kg',
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          ),
+                          onChanged: (val) {
+                            final double parsed = double.tryParse(val) ?? 0.0;
+                            if (parsed > maxStock) {
+                              quantityController.text = maxStock.toStringAsFixed(0);
+                              quantityController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: quantityController.text.length),
+                              );
+                            }
+                            setModalState(() {});
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Transport dropdown
+                  const Text('Moda Transportasi',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: selectedTransport,
+                        isExpanded: true,
+                        items: [
+                          'Ambil Sendiri',
+                          'Kirim via Pick-Up',
+                          'Kirim via Truk',
+                        ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setModalState(() {
+                              selectedTransport = val;
+                              if (val == 'Ambil Sendiri') {
+                                transportFee = 0.0;
+                              } else if (val == 'Kirim via Pick-Up') {
+                                transportFee = 300000.0;
+                              } else {
+                                transportFee = 700000.0;
+                              }
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Price breakdown
+                  const Text('Rincian Pembayaran',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins')),
+                  const SizedBox(height: 8),
+                  _priceBreakdownItem('Harga Satuan', 'Rp ${item.harga.toStringAsFixed(0)}/kg'),
+                  _priceBreakdownItem('Kuantitas', '${qty.toStringAsFixed(0)} kg'),
+                  _priceBreakdownItem('Subtotal Produk', 'Rp ${subtotal.toStringAsFixed(0)}'),
+                  _priceBreakdownItem('Biaya Transport (${selectedTransport})', 'Rp ${transportFee.toStringAsFixed(0)}'),
+                  const Divider(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total Pembayaran',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        'Rp ${total.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: AppColors.primary,
+                            fontFamily: 'Poppins'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Buy Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: qty <= 0
+                          ? null
+                          : () {
+                              Navigator.pop(context);
+                              _showWhatsAppSimulationDialog(
+                                context,
+                                item,
+                                qty,
+                                selectedTransport,
+                                total,
+                              );
+                            },
+                      icon: const Icon(Icons.phone_iphone_rounded, color: Colors.white, size: 18),
+                      label: const Text(
+                        'Hubungi via WhatsApp',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _priceBreakdownItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontFamily: 'InterTight')),
+          Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontFamily: 'InterTight')),
+        ],
+      ),
+    );
+  }
+
+  void _showWhatsAppSimulationDialog(
+    BuildContext context,
+    MarketItem item,
+    double quantity,
+    String transport,
+    double total,
+  ) {
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    
+    final String messageText = 
+      'Halo ${item.penjual},\n\n'
+      'Saya tertarik membeli produk yang Anda tawarkan di PadiGuard Karawang:\n'
+      '• Produk: ${item.namaProduk}\n'
+      '• Jumlah: ${quantity.toStringAsFixed(0)} kg\n'
+      '• Pengiriman: ${transport}\n'
+      '• Total Pembayaran: Rp ${total.toStringAsFixed(0)}\n\n'
+      'Apakah stok tersebut masih tersedia dan bisa diproses? Terima kasih!';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        titlePadding: EdgeInsets.zero,
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: const BoxDecoration(
+            color: Color(0xFF075E54), // WhatsApp green
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(22),
+              topRight: Radius.circular(22),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Simulasi Kirim WhatsApp',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      fontFamily: 'Poppins'),
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.phone_iphone_rounded, size: 16, color: AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Text(
+                  'Kirim ke WA Penjual: ${item.telepon}',
+                  style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      fontFamily: 'InterTight'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Simulated chat bubble
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDCF8C6), // WhatsApp bubble green
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFC7E5B4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    messageText,
+                    style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Colors.black87,
+                        height: 1.45,
+                        fontFamily: 'InterTight'),
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text(
+                      timeStr,
+                      style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.grey.shade600,
+                          fontFamily: 'InterTight'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              // Copy to clipboard simulation
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ Teks pesanan berhasil disalin!'),
+                  backgroundColor: AppColors.primary,
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy_rounded, size: 14),
+            label: const Text('Salin Pesan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('✓ Menghubungi WhatsApp ${item.penjual} (${item.telepon})...'),
+                  backgroundColor: AppColors.primary,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF25D366), // WA Bright green
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Kirim',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+          ),
+        ],
+      ),
+    );
 }
 
 // ─── Custom Canvas Line Chart Painter ────────────────────────────────────────

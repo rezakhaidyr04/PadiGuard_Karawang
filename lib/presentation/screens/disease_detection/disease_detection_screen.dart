@@ -200,13 +200,14 @@ class _DiseaseDetectionScreenState
                   fontFamily: 'Poppins'),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
+            Row(
               children: [
                 _statsBadge('Total Scan', '$totalScans', Colors.blue),
+                const SizedBox(width: 8),
                 _statsBadge('Risiko Tinggi', '$highRiskCount', Colors.red),
+                const SizedBox(width: 8),
                 _statsBadge('Risiko Sedang', '$mediumRiskCount', Colors.orange),
+                const SizedBox(width: 8),
                 _statsBadge(
                     'Tanaman Sehat', '$healthyCount', AppColors.primary),
               ],

@@ -51,14 +51,19 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
       _isTyping = true;
     });
 
-    final apiKey = ref.read(ollamaHostProvider);
+    final ollamaHost = ref.read(ollamaHostProvider);
+    final ollamaModel = ref.read(ollamaModelProvider);
 
     // Simulate bot thinking delay
     Future.delayed(const Duration(milliseconds: 1200), () {
       if (!mounted) return;
       ref
           .read(chatbotStateProvider.notifier)
-          .generateBotResponse(query, apiKey);
+          .generateBotResponse(
+            query,
+            ollamaHost: ollamaHost,
+            ollamaModel: ollamaModel,
+          );
       setState(() {
         _isTyping = false;
       });
@@ -125,8 +130,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings_rounded, color: AppColors.primary),
-            onPressed: () => _showApiKeyDialog(context),
-            tooltip: 'Konfigurasi Gemini AI',
+            onPressed: () => _showOllamaSettingsDialog(context),
+            tooltip: 'Konfigurasi Local AI (Ollama)',
           ),
         ],
       ),
@@ -418,10 +423,12 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
     );
   }
 
-  void _showApiKeyDialog(BuildContext context) {
-    final currentKey = ref.read(ollamaHostProvider);
+  void _showOllamaSettingsDialog(BuildContext context) {
+    final currentHost = ref.read(ollamaHostProvider);
+    final currentModel = ref.read(ollamaModelProvider);
 
-    final keyController = TextEditingController(text: currentKey);
+    final hostController = TextEditingController(text: currentHost);
+    final modelController = TextEditingController(text: currentModel);
 
     showDialog(
       context: context,
@@ -429,10 +436,10 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         title: const Row(
           children: [
-            Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+            Icon(Icons.settings_suggest_rounded, color: AppColors.primary),
             SizedBox(width: 8),
             Text(
-              'Konfigurasi Gemini AI',
+              'Konfigurasi Local AI',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -440,58 +447,60 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Masukkan Google Gemini API Key Anda untuk mengaktifkan kecerdasan buatan asli (Gemini 1.5 Flash).',
-              style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                  fontFamily: 'InterTight'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: keyController,
-              decoration: const InputDecoration(
-                labelText: 'Gemini API Key',
-                hintText: 'Masukkan kunci API Gemini...',
-                prefixIcon: Icon(Icons.key_rounded, color: AppColors.primary),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Masukkan konfigurasi server Ollama lokal Anda untuk mengaktifkan chatbot AI offline.',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                    fontFamily: 'InterTight'),
               ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 14),
-            const Row(
-              children: [
-                Icon(Icons.info_outline_rounded,
-                    size: 14, color: AppColors.primary),
-                SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    'Dapatkan API Key gratis di Google AI Studio:',
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                        fontFamily: 'InterTight'),
-                  ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: hostController,
+                decoration: const InputDecoration(
+                  labelText: 'Ollama Host URL',
+                  hintText: 'Contoh: http://10.0.2.2:11434',
+                  prefixIcon: Icon(Icons.dns_rounded, color: AppColors.primary),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            const SelectableText(
-              'https://aistudio.google.com/',
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                  decoration: TextDecoration.underline,
-                  fontFamily: 'InterTight'),
-            ),
-          ],
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: modelController,
+                decoration: const InputDecoration(
+                  labelText: 'Ollama Model Name',
+                  hintText: 'Contoh: llama3, gemma, mistral',
+                  prefixIcon: Icon(Icons.model_training_rounded, color: AppColors.primary),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Row(
+                children: [
+                  Icon(Icons.info_outline_rounded,
+                      size: 14, color: AppColors.primary),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Gunakan IP host komputer Anda jika dijalankan di HP fisik.',
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                          fontFamily: 'InterTight'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -502,16 +511,15 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
           ElevatedButton(
             onPressed: () {
               ref.read(ollamaHostProvider.notifier).state =
-                  keyController.text.trim();
+                  hostController.text.trim();
+              ref.read(ollamaModelProvider.notifier).state =
+                  modelController.text.trim();
 
               Navigator.pop(context);
 
-              final isKeyEmpty = keyController.text.trim().isEmpty;
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(isKeyEmpty
-                      ? '✓ Menggunakan AI Simulator Offline'
-                      : '✓ Gemini AI Aktif Terhubung!'),
+                const SnackBar(
+                  content: Text('✓ Konfigurasi Local AI Berhasil Disimpan!'),
                   backgroundColor: AppColors.primary,
                 ),
               );
