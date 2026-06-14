@@ -1,51 +1,78 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-/// App Color Palette
+/// App Color Palette — PadiGuard Green Agro Theme
 class AppColors {
-  // Primary Colors (Blue theme)
-  static const Color primary = Color(0xFF1976D2); // Blue 700
-  static const Color primaryLight = Color(0xFF63A4FF); // Light blue
-  static const Color primaryDark = Color(0xFF115293); // Darker blue
+  // Primary Colors (Rice Green)
+  static const Color primary = Color(0xFF2E7D32); // Forest Green
+  static const Color primaryLight = Color(0xFF60AD5E); // Medium Green
+  static const Color primaryDark = Color(0xFF005005); // Deep Forest Green
+
+  // Accent Colors
+  static const Color accent = Color(0xFFFF8F00); // Harvest Gold
+  static const Color accentLight = Color(0xFFFFBF47); // Light Gold
+  static const Color accentDark = Color(0xFFC56000); // Dark Gold
 
   // Secondary Colors
-  static const Color secondary = Color(0xFFF57C00); // Orange (harvest/warning)
-  static const Color secondaryLight = Color(0xFFFFB74D); // Light orange
-  static const Color secondaryDark = Color(0xFFE65100); // Dark orange
+  static const Color secondary = Color(0xFF00897B); // Teal Green
+  static const Color secondaryLight = Color(0xFF4EBAAA); // Light Teal
+  static const Color secondaryDark = Color(0xFF005B4F); // Dark Teal
 
   // Status Colors
-  static const Color success = Color(0xFF4CAF50); // Green
+  static const Color success = Color(0xFF388E3C); // Green
   static const Color successLight = Color(0xFF81C784); // Light green
-  static const Color warning = Color(0xFFFFC107); // Amber
-  static const Color error = Color(0xFFF44336); // Red
-  static const Color info = Color(0xFF2196F3); // Blue
+  static const Color warning = Color(0xFFF57F17); // Dark Amber
+  static const Color warningLight = Color(0xFFFFCC02); // Yellow
+  static const Color error = Color(0xFFC62828); // Deep Red
+  static const Color errorLight = Color(0xFFEF5350); // Light Red
+  static const Color info = Color(0xFF0277BD); // Blue
 
   // Risk Colors (for disease/harvest risk)
-  static const Color riskLow = Color(0xFF4CAF50); // Green
-  static const Color riskMedium = Color(0xFFFFC107); // Amber
-  static const Color riskHigh = Color(0xFFF44336); // Red
+  static const Color riskLow = Color(0xFF388E3C); // Green
+  static const Color riskMedium = Color(0xFFF57F17); // Amber
+  static const Color riskHigh = Color(0xFFC62828); // Red
 
   // Background Colors
-  static const Color background = Color(0xFFFAFAFA); // Light gray
+  static const Color background = Color(0xFFF1F8E9); // Very light green tint
   static const Color surface = Color(0xFFFFFFFF); // White
-  static const Color surfaceVariant = Color(0xFFF5F5F5); // Very light gray
+  static const Color surfaceVariant = Color(0xFFF9FBF5); // Off white greenish
+  static const Color surfaceGreen = Color(0xFFE8F5E9); // Light green surface
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF212121); // Dark gray
-  static const Color textSecondary = Color(0xFF757575); // Medium gray
-  static const Color textHint = Color(0xFFBDBDBD); // Light gray
+  static const Color textPrimary = Color(0xFF1B2E1D); // Very dark green/black
+  static const Color textSecondary = Color(0xFF4A6741); // Medium dark green
+  static const Color textHint = Color(0xFF9DBE96); // Light muted green
   static const Color textOnPrimary = Color(0xFFFFFFFF); // White
 
   // Border & Divider
-  static const Color border = Color(0xFFE0E0E0); // Light gray
-  static const Color divider = Color(0xFFEEEEEE); // Very light gray
+  static const Color border = Color(0xFFDCEDC8); // Light green border
+  static const Color divider = Color(0xFFEAF4DA); // Very light green divider
+
+  // Gradient helpers
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient accentGradient = LinearGradient(
+    colors: [Color(0xFFFF8F00), Color(0xFFE65100)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient lushGradient = LinearGradient(
+    colors: [Color(0xFF43A047), Color(0xFF1B5E20)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   // Transparent
   static const Color transparent = Color(0x00000000);
 
   // Skeleton/Loading
-  static const Color skeletonBase = Color(0xFFE0E0E0);
-  static const Color skeletonHighlight = Color(0xFFF5F5F5);
+  static const Color skeletonBase = Color(0xFFDCEDC8);
+  static const Color skeletonHighlight = Color(0xFFF1F8E9);
 }
 
 /// App Theme Data
@@ -54,11 +81,11 @@ class AppTheme {
     useMaterial3: true,
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: ZoomPageTransitionsBuilder(),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: ZoomPageTransitionsBuilder(),
         TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.windows: ZoomPageTransitionsBuilder(),
       },
     ),
     brightness: Brightness.light,
@@ -83,29 +110,35 @@ class AppTheme {
     ),
     cardTheme: CardThemeData(
       color: AppColors.surface,
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border, width: 1),
       ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: AppColors.surfaceGreen,
+      labelStyle: _bodySmall(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.surfaceVariant,
       contentPadding: const EdgeInsets.all(16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: AppColors.border),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: AppColors.error),
       ),
       hintStyle: _bodyMedium().copyWith(color: AppColors.textHint),
@@ -117,9 +150,9 @@ class AppTheme {
         foregroundColor: AppColors.textOnPrimary,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, 52),
         textStyle: _labelLarge().copyWith(color: AppColors.textOnPrimary),
       ),
     ),
@@ -128,10 +161,19 @@ class AppTheme {
         foregroundColor: AppColors.primary,
         side: const BorderSide(color: AppColors.primary),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, 52),
       ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      elevation: 4,
+    ),
+    dividerTheme: const DividerThemeData(
+      color: AppColors.divider,
+      thickness: 1,
     ),
     textTheme: TextTheme(
       displayLarge: _displayLarge(),
@@ -154,33 +196,23 @@ class AppTheme {
 
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: {
-        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-      },
-    ),
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
       primary: AppColors.primaryLight,
       secondary: AppColors.secondaryLight,
-      surface: Color(0xFF121212),
-      error: Color(0xFFCF6679),
+      surface: Color(0xFF121A10),
+      error: AppColors.errorLight,
       onPrimary: AppColors.textPrimary,
       onSecondary: AppColors.textPrimary,
-      onSurface: Color(0xFFE0E0E0),
+      onSurface: Color(0xFFE0EDD9),
       onError: AppColors.textPrimary,
     ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    appBarTheme: AppBarTheme(
+    scaffoldBackgroundColor: const Color(0xFF0D1510),
+    appBarTheme: const AppBarTheme(
       elevation: 0,
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: Color(0xFF1A2618),
       surfaceTintColor: Colors.transparent,
-      iconTheme: const IconThemeData(color: Color(0xFFE0E0E0)),
-      titleTextStyle: _titleLarge(),
+      iconTheme: IconThemeData(color: Color(0xFFB8D4AE)),
     ),
   );
 
@@ -207,7 +239,6 @@ class AppTheme {
         color: AppColors.textPrimary,
       );
 
-  // Text Styles - Headline
   static TextStyle _headlineLarge() => const TextStyle(
         fontSize: 32,
         fontWeight: FontWeight.w700,
@@ -229,9 +260,8 @@ class AppTheme {
         color: AppColors.textPrimary,
       );
 
-  // Text Styles - Title
   static TextStyle _titleLarge() => const TextStyle(
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: FontWeight.w600,
         fontFamily: 'Poppins',
         color: AppColors.textPrimary,
@@ -251,11 +281,10 @@ class AppTheme {
         color: AppColors.textPrimary,
       );
 
-  // Text Styles - Body
   static TextStyle _bodyLarge() => const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        fontFamily: 'InterTight',
+        fontFamily: 'Inter',
         color: AppColors.textPrimary,
         height: 1.5,
       );
@@ -263,7 +292,7 @@ class AppTheme {
   static TextStyle _bodyMedium() => const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        fontFamily: 'InterTight',
+        fontFamily: 'Inter',
         color: AppColors.textPrimary,
         height: 1.43,
       );
@@ -271,16 +300,15 @@ class AppTheme {
   static TextStyle _bodySmall() => const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        fontFamily: 'InterTight',
+        fontFamily: 'Inter',
         color: AppColors.textSecondary,
         height: 1.33,
       );
 
-  // Text Styles - Label
   static TextStyle _labelLarge() => const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        fontFamily: 'InterTight',
+        fontFamily: 'Inter',
         color: AppColors.textPrimary,
         letterSpacing: 0.1,
       );
@@ -288,7 +316,7 @@ class AppTheme {
   static TextStyle _labelMedium() => const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        fontFamily: 'InterTight',
+        fontFamily: 'Inter',
         color: AppColors.textPrimary,
         letterSpacing: 0.5,
       );
@@ -296,7 +324,7 @@ class AppTheme {
   static TextStyle _labelSmall() => const TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w600,
-        fontFamily: 'InterTight',
+        fontFamily: 'Inter',
         color: AppColors.textSecondary,
         letterSpacing: 0.5,
       );

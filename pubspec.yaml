@@ -7,7 +7,6 @@ version: 1.0.0+1
 environment:
   sdk: ^3.0.0
 
-# FLUTLAB OPTIMIZED - Lightweight version for online IDE
 dependencies:
   flutter:
     sdk: flutter
@@ -26,6 +25,7 @@ dependencies:
 
   # UI/UX
   cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
 
   # Utilities
   logger: ^2.0.1
@@ -34,20 +34,8 @@ dependencies:
   image: ^4.1.0
   image_picker: ^1.0.7
 
-  # ❌ REMOVED FOR FLUTLAB:
-  # - tflite_flutter (native compilation required)
-  # - camera (native code + permissions)
-  # - image_picker (native code)
-  # - google_maps_flutter (native code + API key)
-  # - geolocator (GPS + permissions)
-  # - permission_handler (device permissions)
-  # - connectivity_plus (native implementation)
-  # - firebase_messaging (native code)
-  # - firebase_analytics (native code)
-  # - cached_network_image (optional, use simple Image.network)
-  # - get (navigation - using Navigator instead)
-  # - animated_splash_screen (simple animation instead)
-  # - smooth_page_indicator (custom implementation)
+  # URL Launcher (for WhatsApp integration)
+  url_launcher: ^6.2.4
 
 dev_dependencies:
   flutter_test:
@@ -58,5 +46,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-# Minimal: do not hardcode assets in flutlab optimized pubspec
-
+  assets:
+    - assets/images/
+    - assets/data/

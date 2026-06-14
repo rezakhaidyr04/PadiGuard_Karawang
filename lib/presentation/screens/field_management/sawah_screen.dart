@@ -1,4 +1,3 @@
-// File: lib/presentation/screens/field_management/sawah_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
@@ -14,7 +13,6 @@ class SawahScreen extends ConsumerWidget {
     final sawahList = ref.watch(sawahStateProvider);
     final now = DateTime.now();
 
-    // Jika provider kosong (mis. belum ada data), tampilkan demo agar tab Sawah tidak blank.
     final effectiveSawahList = sawahList.isEmpty
         ? [
             SawahModel(
@@ -40,29 +38,6 @@ class SawahScreen extends ConsumerWidget {
               createdAt: now.subtract(const Duration(days: 45)),
               updatedAt: now,
             ),
-            SawahModel(
-              id: 'sawah-demo-2',
-              userId: 'demo-user',
-              nama: 'Sawah Demo - Tempuran',
-              latitude: -6.1824,
-              longitude: 107.4255,
-              luasHektar: 1.8,
-              jenisTanaman: 'Inpari 32',
-              tanggalTanam: now.subtract(const Duration(days: 75)),
-              tanggalPanenExpected: now.add(const Duration(days: 45)),
-              umurTanamanHari: 75,
-              kelembaban: 65.0,
-              ph: 6.1,
-              temperatureCelsius: 30.2,
-              jenisAirTanah: 'Lempung Berpasir',
-              ketersediaanAir: 'Kurang',
-              status: 'growing',
-              statusKesehatan: 'Risiko',
-              skorRisiko: 35,
-              idLogHama: const ['hama-1'],
-              createdAt: now.subtract(const Duration(days: 75)),
-              updatedAt: now,
-            ),
           ]
         : sawahList;
 
@@ -70,14 +45,13 @@ class SawahScreen extends ConsumerWidget {
     int healthyCount = 0;
     int riskCount = 0;
     int sickCount = 0;
-
     for (final s in effectiveSawahList) {
       totalArea += s.luasHektar;
       if (s.statusKesehatan == 'Sehat') {
         healthyCount++;
       } else if (s.statusKesehatan == 'Risiko') {
         riskCount++;
-      } else if (s.statusKesehatan == 'Sakit') {
+      } else {
         sickCount++;
       }
     }
@@ -88,6 +62,7 @@ class SawahScreen extends ConsumerWidget {
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
+            // ─── Header ────────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -97,46 +72,36 @@ class SawahScreen extends ConsumerWidget {
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Manajemen Sawah',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
+                        Text('Manajemen Sawah 🌾',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              fontFamily: 'Poppins',
+                            )),
                         SizedBox(height: 2),
-                        Text(
-                          'Kelola semua lahan pertanian Anda',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            fontFamily: 'InterTight',
-                          ),
-                        ),
+                        Text('Kelola semua lahan pertanian Anda',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              fontFamily: 'Inter',
+                            )),
                       ],
                     ),
                     ElevatedButton.icon(
                       onPressed: () => showAddSawahDialog(context, ref),
-                      icon:
-                          const Icon(Icons.add, size: 18, color: Colors.white),
-                      label: const Text(
-                        'Tambah',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                      icon: const Icon(Icons.add_rounded,
+                          size: 18, color: Colors.white),
+                      label: const Text('Tambah',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.white)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
+                        minimumSize: Size.zero,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
+                            horizontal: 16, vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+                            borderRadius: BorderRadius.circular(14)),
                         elevation: 0,
                       ),
                     ),
@@ -144,502 +109,94 @@ class SawahScreen extends ConsumerWidget {
                 ),
               ),
             ),
+
+            // ─── Summary Banner ─────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.border),
+                    gradient: AppColors.lushGradient,
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.agriculture_rounded,
-                          color: AppColors.primary,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const Text('TOTAL LAHAN AKTIF',
+                                style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.0)),
+                            const SizedBox(height: 4),
                             Text(
-                              '${effectiveSawahList.length} Sawah Aktif',
+                              '${effectiveSawahList.length} Sawah · ${totalArea.toStringAsFixed(1)} Ha',
                               style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                                fontFamily: 'Poppins',
-                              ),
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins'),
                             ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              'Pantau kesehatan tanaman dan kelola lahan pertanian Anda',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                                fontFamily: 'InterTight',
-                              ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                _statusPill('✅ $healthyCount Sehat',
+                                    AppColors.success),
+                                const SizedBox(width: 8),
+                                if (riskCount > 0)
+                                  _statusPill(
+                                      '⚠️ $riskCount Risiko', AppColors.warning),
+                                if (sickCount > 0) ...[
+                                  const SizedBox(width: 8),
+                                  _statusPill(
+                                      '🚨 $sickCount Sakit', AppColors.error),
+                                ],
+                              ],
                             ),
                           ],
                         ),
                       ),
+                      const Text('🗺️', style: TextStyle(fontSize: 52)),
                     ],
                   ),
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 2 - 26,
-                      child: _summaryCard(
-                        '${effectiveSawahList.length}',
-                        'Total Lahan',
-                        Icons.agriculture_rounded,
-                        AppColors.primary,
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 2 - 26,
-                      child: _summaryCard(
-                        '${totalArea.toStringAsFixed(1)} Ha',
-                        'Total Luas',
-                        Icons.straighten_rounded,
-                        Colors.blue,
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 3 - 20,
-                      child: _summaryCard(
-                        '$healthyCount',
-                        'Sehat',
-                        Icons.favorite_rounded,
-                        AppColors.success,
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 3 - 20,
-                      child: _summaryCard(
-                        '$riskCount',
-                        'Risiko',
-                        Icons.warning_rounded,
-                        AppColors.warning,
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 3 - 20,
-                      child: _summaryCard(
-                        '$sickCount',
-                        'Sakit',
-                        Icons.local_hospital_rounded,
-                        AppColors.error,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 14)),
+
+            // ─── Sawah List Title ───────────────────────────────────────────
             const SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Daftar Lahan Sawah',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 10)),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              sliver: effectiveSawahList.isEmpty
-                  ? SliverToBoxAdapter(
-                      child: Container(
-                        height: 220,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4))
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('Belum ada lahan terdaftar.',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textSecondary)),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Tekan tombol di bawah untuk menambah sawah demo atau tekan "Tambah".',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textHint),
-                            ),
-                            const SizedBox(height: 18),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                // Tambah demo sawah ke provider
-                                final now = DateTime.now();
-                                final demo = SawahModel(
-                                  id: 'sawah-demo-${now.millisecondsSinceEpoch}',
-                                  userId: 'demo-user',
-                                  nama: 'Sawah Demo Tambahan',
-                                  latitude: AppConstants.karawangLatitude,
-                                  longitude: AppConstants.karawangLongitude,
-                                  luasHektar: 1.2,
-                                  jenisTanaman: 'Ciherang',
-                                  tanggalTanam:
-                                      now.subtract(const Duration(days: 30)),
-                                  tanggalPanenExpected:
-                                      now.add(const Duration(days: 85)),
-                                  umurTanamanHari: 30,
-                                  kelembaban: 72.0,
-                                  ph: 6.4,
-                                  temperatureCelsius: 29.0,
-                                  jenisAirTanah: 'Lempung',
-                                  ketersediaanAir: 'Lancar',
-                                  status: 'growing',
-                                  statusKesehatan: 'Sehat',
-                                  skorRisiko: 8,
-                                  idLogHama: const [],
-                                  createdAt: now,
-                                  updatedAt: now,
-                                );
-
-                                ref
-                                    .read(sawahStateProvider.notifier)
-                                    .addSawah(demo);
-                              },
-                              icon: const Icon(Icons.add),
-                              label: const Text('Tambah Sawah Demo'),
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary),
-                            )
-                          ],
-                        ),
-                      ),
-                    )
-                  : SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => _buildSawahCard(
-                          context,
-                          effectiveSawahList[index],
-                          ref,
-                        ),
-                        childCount: effectiveSawahList.length,
-                      ),
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _summaryCard(String value, String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-              fontFamily: 'Poppins',
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'InterTight',
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _healthColor(String status) {
-    if (status == 'Sakit') return AppColors.error;
-    if (status == 'Risiko') return AppColors.warning;
-    return AppColors.success;
-  }
-
-  Widget _buildSawahCard(
-      BuildContext context, SawahModel sawah, WidgetRef ref) {
-    final healthColor = _healthColor(sawah.statusKesehatan);
-
-    String phaseLabel = 'Tunas';
-    if (sawah.umurTanamanHari >= 90) {
-      phaseLabel = 'Siap Panen';
-    } else if (sawah.umurTanamanHari >= 61) {
-      phaseLabel = 'Generatif';
-    } else if (sawah.umurTanamanHari >= 31) {
-      phaseLabel = 'Vegetatif';
-    }
-
-    final hariTersisa =
-        sawah.tanggalPanenExpected.difference(DateTime.now()).inDays;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        sawah.nama,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                          fontFamily: 'Poppins',
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined,
-                              size: 12, color: AppColors.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${sawah.latitude.toStringAsFixed(3)}, ${sawah.longitude.toStringAsFixed(3)}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.textSecondary,
-                              fontFamily: 'InterTight',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: healthColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: healthColor.withValues(alpha: 0.3), width: 1),
-                  ),
-                  child: Text(
-                    sawah.statusKesehatan,
+                padding: EdgeInsets.fromLTRB(20, 20, 20, 8),
+                child: Text('Daftar Lahan Sawah',
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: healthColor,
-                      fontFamily: 'InterTight',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                    child: _infoChip(Icons.straighten_rounded,
-                        '${sawah.luasHektar} Ha', Colors.blue)),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: _infoChip(Icons.grass_rounded, sawah.jenisTanaman,
-                        AppColors.primary)),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: _infoChip(Icons.calendar_month_rounded,
-                        '${sawah.umurTanamanHari} HST', Colors.orange)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _progressBar('Fase Pertumbuhan: $phaseLabel', sawah.umurTanamanHari,
-                120, AppColors.primary),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.schedule_rounded,
-                      color: Colors.orange, size: 14),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Estimasi Panen',
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: AppColors.textSecondary,
-                            fontFamily: 'InterTight',
-                          ),
-                        ),
-                        Text(
-                          hariTersisa > 0
-                              ? '$hariTersisa hari lagi'
-                              : 'Siap panen',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.orange,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    '${sawah.tanggalPanenExpected.day}/${sawah.tanggalPanenExpected.month}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
-                      fontFamily: 'InterTight',
-                    ),
-                  ),
-                ],
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'Poppins')),
               ),
             ),
-            const SizedBox(height: 14),
-            const Divider(height: 1, color: AppColors.divider),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showSawahDetail(context, sawah),
-                    icon: const Icon(Icons.info_outline_rounded, size: 16),
-                    label: const Text('Detail',
-                        style: TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(
-                          color: AppColors.primary, width: 1.2),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                  ),
+
+            // ─── Sawah Cards ────────────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, i) =>
+                      _SawahCard(sawah: effectiveSawahList[i], ref: ref),
+                  childCount: effectiveSawahList.length,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      ref.read(selectedSawahIdProvider.notifier).state =
-                          sawah.id;
-                      ref.read(currentTabProvider.notifier).state = 2;
-                    },
-                    icon: const Icon(Icons.bug_report_rounded,
-                        size: 16, color: Colors.white),
-                    label: const Text('Scan',
-                        style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -647,79 +204,25 @@ class SawahScreen extends ConsumerWidget {
     );
   }
 
-  Widget _infoChip(IconData icon, String label, Color color) {
+  static Widget _statusPill(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'InterTight',
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
+      child: Text(text,
+          style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold)),
     );
   }
 
-  Widget _progressBar(String label, int value, int maxVal, Color color) {
-    final progress = (value / maxVal).clamp(0.0, 1.0);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textSecondary,
-                  fontFamily: 'InterTight'),
-            ),
-            Text(
-              '$value/$maxVal Hari',
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                  fontFamily: 'InterTight'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: color.withValues(alpha: 0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 8,
-          ),
-        ),
-      ],
-    );
-  }
-
+  // ─── Add Sawah Dialog ───────────────────────────────────────────────────────
   static void showAddSawahDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final areaController = TextEditingController();
-
     String? selectedPadi = 'Ciherang';
     DateTime selectedDate = DateTime.now();
     final formKey = GlobalKey<FormState>();
@@ -729,13 +232,10 @@ class SawahScreen extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
+        builder: (context, setModal) => Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
@@ -750,41 +250,43 @@ class SawahScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Daftarkan Sawah Baru 🌾',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins'),
-                      ),
+                      const Text('Daftarkan Sawah Baru 🌾',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins')),
                       IconButton(
                           icon: const Icon(Icons.close),
                           onPressed: () => Navigator.pop(context)),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text('Nama Sawah',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  _fieldLabel('Nama Lahan Sawah'),
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: nameController,
                     decoration: const InputDecoration(
                       hintText: 'Contoh: Sawah Utama Blok C',
-                      prefixIcon: Icon(Icons.agriculture_rounded,
-                          color: AppColors.primary),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      prefixIcon:
+                          Icon(Icons.agriculture_rounded, color: AppColors.primary),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Nama sawah tidak boleh kosong';
-                      }
-                      return null;
-                    },
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Nama tidak boleh kosong' : null,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -793,29 +295,21 @@ class SawahScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Luas Sawah (Ha)',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            _fieldLabel('Luas (Ha)'),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: areaController,
                               keyboardType: const TextInputType.numberWithOptions(
                                   decimal: true),
                               decoration: const InputDecoration(
-                                hintText: 'Contoh: 1.5',
+                                hintText: '1.5',
                                 prefixIcon: Icon(Icons.straighten_rounded,
                                     color: AppColors.primary),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Wajib diisi';
-                                }
-                                final parsed = double.tryParse(value);
-                                if (parsed == null || parsed <= 0) {
-                                  return 'Harus angka > 0';
-                                }
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return 'Wajib isi';
+                                final p = double.tryParse(v);
+                                if (p == null || p <= 0) return 'Harus > 0';
                                 return null;
                               },
                             ),
@@ -827,15 +321,14 @@ class SawahScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Jenis Padi',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            _fieldLabel('Jenis Padi'),
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceVariant,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(14),
                                 border: Border.all(color: AppColors.border),
                               ),
                               child: DropdownButtonHideUnderline(
@@ -852,8 +345,8 @@ class SawahScreen extends ConsumerWidget {
                                       .map((p) => DropdownMenuItem(
                                           value: p, child: Text(p)))
                                       .toList(),
-                                  onChanged: (val) =>
-                                      setModalState(() => selectedPadi = val),
+                                  onChanged: (v) =>
+                                      setModal(() => selectedPadi = v),
                                 ),
                               ),
                             ),
@@ -862,11 +355,8 @@ class SawahScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
-                  const Text('Tanggal Tanam',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  _fieldLabel('Tanggal Tanam'),
                   const SizedBox(height: 6),
                   InkWell(
                     onTap: () async {
@@ -876,52 +366,58 @@ class SawahScreen extends ConsumerWidget {
                         firstDate:
                             DateTime.now().subtract(const Duration(days: 365)),
                         lastDate: DateTime.now(),
+                        builder: (ctx, child) => Theme(
+                          data: Theme.of(ctx).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: AppColors.primary,
+                            ),
+                          ),
+                          child: child!,
+                        ),
                       );
-                      if (date != null) {
-                        setModalState(() => selectedDate = date);
-                      }
+                      if (date != null) setModal(() => selectedDate = date);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 14),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          const Icon(Icons.calendar_today_rounded,
+                              color: AppColors.primary, size: 18),
+                          const SizedBox(width: 12),
                           Text(
                             '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                          const Icon(Icons.calendar_today_rounded,
-                              size: 18, color: AppColors.primary),
+                          const Spacer(),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: AppColors.textHint),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 26),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    height: 52,
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         if (!formKey.currentState!.validate()) return;
-                        final name = nameController.text.trim();
-                        final area = double.parse(areaController.text);
-                        const lat = AppConstants.karawangLatitude;
-                        const lon = AppConstants.karawangLongitude;
                         final diffDays =
                             DateTime.now().difference(selectedDate).inDays;
-
                         final newSawah = SawahModel(
                           id: 'sawah-${DateTime.now().millisecondsSinceEpoch}',
                           userId: 'user-001',
-                          nama: name,
-                          latitude: lat,
-                          longitude: lon,
-                          luasHektar: area,
+                          nama: nameController.text.trim(),
+                          latitude: AppConstants.karawangLatitude,
+                          longitude: AppConstants.karawangLongitude,
+                          luasHektar:
+                              double.parse(areaController.text),
                           jenisTanaman: selectedPadi!,
                           tanggalTanam: selectedDate,
                           tanggalPanenExpected:
@@ -932,38 +428,33 @@ class SawahScreen extends ConsumerWidget {
                           temperatureCelsius: 29.0,
                           jenisAirTanah: 'Lempung Liat',
                           ketersediaanAir: 'Lancar',
-                          status: diffDays >= 90
-                              ? 'matang'
-                              : diffDays >= 61
-                                  ? 'generatif'
-                                  : 'growing',
+                          status: 'growing',
                           statusKesehatan: 'Sehat',
                           skorRisiko: 5,
                           idLogHama: const [],
                           createdAt: DateTime.now(),
                           updatedAt: DateTime.now(),
                         );
-
                         ref.read(sawahStateProvider.notifier).addSawah(newSawah);
                         Navigator.pop(context);
-
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('✓ Sawah Baru Berhasil Didaftarkan!'),
+                            content: Text('✅ Sawah baru berhasil didaftarkan!'),
                             backgroundColor: AppColors.primary,
                           ),
                         );
                       },
+                      icon: const Icon(Icons.save_rounded,
+                          color: Colors.white, size: 18),
+                      label: const Text('Simpan Lahan Sawah',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 15)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: const Text(
-                        'Simpan Lahan Sawah',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ),
                   ),
@@ -976,7 +467,344 @@ class SawahScreen extends ConsumerWidget {
     );
   }
 
-  void _showSawahDetail(BuildContext context, SawahModel sawah) {
+  static Widget _fieldLabel(String label) {
+    return Text(label,
+        style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: AppColors.textPrimary));
+  }
+}
+
+// ─── Sawah Card ───────────────────────────────────────────────────────────────
+class _SawahCard extends StatelessWidget {
+  final SawahModel sawah;
+  final WidgetRef ref;
+
+  const _SawahCard({required this.sawah, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    Color healthColor = AppColors.success;
+    String healthEmoji = '✅';
+    if (sawah.statusKesehatan == 'Sakit') {
+      healthColor = AppColors.error;
+      healthEmoji = '🚨';
+    } else if (sawah.statusKesehatan == 'Risiko') {
+      healthColor = AppColors.warning;
+      healthEmoji = '⚠️';
+    }
+
+    final phase = _getPhase(sawah.umurTanamanHari);
+    final phaseEmoji = _getPhaseEmoji(sawah.umurTanamanHari);
+    final daysLeft =
+        sawah.tanggalPanenExpected.difference(DateTime.now()).inDays;
+    final progress = (sawah.umurTanamanHari / 115).clamp(0.0, 1.0);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Card header with gradient top
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+            decoration: BoxDecoration(
+              color: healthColor.withValues(alpha: 0.05),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(22)),
+              border:
+                  const Border(bottom: BorderSide(color: AppColors.border, width: 1)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(sawah.nama,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                              fontFamily: 'Poppins'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(phaseEmoji,
+                              style: const TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Fase $phase · ${sawah.umurTanamanHari} HST',
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                                fontFamily: 'Inter'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: healthColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: healthColor.withValues(alpha: 0.3), width: 1),
+                  ),
+                  child: Text(
+                    '$healthEmoji ${sawah.statusKesehatan}',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: healthColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Info grid
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    _infoBlock(Icons.straighten_rounded,
+                        '${sawah.luasHektar} Ha', 'Luas Lahan', Colors.blue),
+                    _infoBlock(Icons.grass_rounded, sawah.jenisTanaman,
+                        'Jenis Padi', AppColors.primary),
+                    _infoBlock(Icons.water_drop_rounded,
+                        '${sawah.kelembaban.toStringAsFixed(0)}%',
+                        'Kelembaban', Colors.cyan.shade700),
+                    _infoBlock(
+                        Icons.science_rounded,
+                        sawah.ph.toStringAsFixed(1),
+                        'pH Tanah',
+                        Colors.purple.shade500),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Growth progress
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Progres Pertumbuhan: Fase $phase',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                              fontFamily: 'Inter'),
+                        ),
+                        Text(
+                          '${(progress * 100).toStringAsFixed(0)}%',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontFamily: 'Poppins'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 8,
+                        backgroundColor: AppColors.border,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progress > 0.85
+                              ? AppColors.accent
+                              : AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // Harvest countdown
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: daysLeft <= 14
+                        ? AppColors.accent.withValues(alpha: 0.08)
+                        : AppColors.surfaceGreen,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: daysLeft <= 14
+                          ? AppColors.accent.withValues(alpha: 0.3)
+                          : AppColors.border,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        daysLeft <= 14 ? '🌾' : '📅',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Estimasi Panen',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textSecondary,
+                                    fontFamily: 'Inter')),
+                            Text(
+                              daysLeft > 0 ? '$daysLeft hari lagi' : '🎉 Siap Panen!',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: daysLeft <= 14
+                                      ? AppColors.accent
+                                      : AppColors.primary,
+                                  fontFamily: 'Poppins'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '${sawah.tanggalPanenExpected.day}/${sawah.tanggalPanenExpected.month}/${sawah.tanggalPanenExpected.year}',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: daysLeft <= 14
+                                ? AppColors.accent
+                                : AppColors.primary,
+                            fontFamily: 'Inter'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showSawahDetail(context, sawah),
+                    icon: const Icon(Icons.info_outline_rounded, size: 16),
+                    label: const Text('Detail',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      minimumSize: const Size(0, 44),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      ref.read(selectedSawahIdProvider.notifier).state =
+                          sawah.id;
+                      ref.read(currentTabProvider.notifier).state = 2;
+                    },
+                    icon: const Icon(Icons.document_scanner_rounded,
+                        size: 16, color: Colors.white),
+                    label: const Text('Scan Hama',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      minimumSize: const Size(0, 44),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _infoBlock(
+      IconData icon, String value, String label, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontFamily: 'Poppins'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 9,
+                  color: AppColors.textHint,
+                  fontFamily: 'Inter')),
+        ],
+      ),
+    );
+  }
+
+  String _getPhase(int hst) {
+    if (hst >= 90) return 'Panen';
+    if (hst >= 61) return 'Generatif';
+    if (hst >= 31) return 'Vegetatif';
+    return 'Bibit';
+  }
+
+  String _getPhaseEmoji(int hst) {
+    if (hst >= 90) return '🌾';
+    if (hst >= 61) return '🌻';
+    if (hst >= 31) return '🌿';
+    return '🌱';
+  }
+
+  static void _showSawahDetail(BuildContext context, SawahModel sawah) {
     final age = sawah.umurTanamanHari;
     final phase = age >= 90
         ? 'Panen'
@@ -990,167 +818,128 @@ class SawahScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.92,
+        minChildSize: 0.5,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: ListView(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  sawah.nama,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins'),
+          child: ListView(
+            controller: controller,
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context)),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'Jenis Padi: ${sawah.jenisTanaman} • ${sawah.luasHektar} Ha',
-              style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  fontFamily: 'InterTight'),
-            ),
-            const SizedBox(height: 18),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
-                border:
-                    Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Status Sawah: Fase $phase ($age Hari)',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.primaryDark,
-                      fontFamily: 'Poppins',
-                    ),
+                  Expanded(
+                    child: Text(sawah.nama,
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins')),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Kelembaban: ${sawah.kelembaban.toStringAsFixed(0)}% • pH: ${sawah.ph.toStringAsFixed(1)} • Suhu: ${sawah.temperatureCelsius.toStringAsFixed(0)}°C',
-                    style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                        fontFamily: 'InterTight',
-                        height: 1.4),
-                  ),
+                  IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context)),
                 ],
               ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Kalender Kegiatan Pertanian',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  fontFamily: 'Poppins'),
-            ),
-            const SizedBox(height: 12),
-            _calendarTimelineItem(
-              title: 'Estimasi Waktu Panen Raya 🌾',
-              desc: 'Prediksi panen berdasarkan jenis padi.',
-              date:
-                  'Perkiraan Tanggal: ${sawah.tanggalPanenExpected.day}/${sawah.tanggalPanenExpected.month}/${sawah.tanggalPanenExpected.year}',
-              color: Colors.purple,
-              isCompleted: false,
-              isLast: true,
-            ),
-          ],
+              Text('${sawah.jenisTanaman} · ${sawah.luasHektar} Ha',
+                  style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontFamily: 'Inter')),
+              const SizedBox(height: 20),
+
+              // Detail rows
+              _detailSection('Kondisi Lahan Saat Ini', [
+                _DetailRow('Fase', 'Fase $phase ($age Hari Setelah Tanam)'),
+                _DetailRow('Status Kesehatan', sawah.statusKesehatan),
+                _DetailRow('Skor Risiko', '${sawah.skorRisiko}% risiko gagal panen'),
+                _DetailRow('Kelembaban Tanah', '${sawah.kelembaban.toStringAsFixed(0)}%'),
+                _DetailRow('pH Keasaman', sawah.ph.toStringAsFixed(1)),
+                _DetailRow('Suhu', '${sawah.temperatureCelsius.toStringAsFixed(0)}°C'),
+                _DetailRow('Jenis Air Tanah', sawah.jenisAirTanah),
+                _DetailRow('Ketersediaan Air', sawah.ketersediaanAir),
+              ]),
+              const SizedBox(height: 20),
+
+              _detailSection('Jadwal Pertanian', [
+                _DetailRow('Tanggal Tanam',
+                    '${sawah.tanggalTanam.day}/${sawah.tanggalTanam.month}/${sawah.tanggalTanam.year}'),
+                _DetailRow('Estimasi Panen',
+                    '${sawah.tanggalPanenExpected.day}/${sawah.tanggalPanenExpected.month}/${sawah.tanggalPanenExpected.year}'),
+              ]),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _calendarTimelineItem({
-    required String title,
-    required String desc,
-    required String date,
-    required Color color,
-    required bool isCompleted,
-    bool isLast = false,
-  }) {
-    return Row(
+  static Widget _detailSection(
+      String title, List<Widget> rows) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: isCompleted ? AppColors.primary : Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: color, width: 2),
-              ),
-              child: isCompleted
-                  ? const Icon(Icons.check, size: 10, color: Colors.white)
-                  : CircleAvatar(
-                      backgroundColor: color.withValues(alpha: 0.5), radius: 4),
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 60,
-                color: isCompleted ? AppColors.primary : Colors.grey.shade300,
-              ),
-          ],
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Poppins'),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                desc,
-                style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                    height: 1.3,
-                    fontFamily: 'InterTight'),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                date,
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                    fontFamily: 'InterTight'),
-              ),
-              const SizedBox(height: 16),
-            ],
+        Text(title,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                fontFamily: 'Poppins')),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
           ),
+          child: Column(children: rows),
         ),
       ],
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _DetailRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter')),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'Poppins')),
+        ],
+      ),
     );
   }
 }

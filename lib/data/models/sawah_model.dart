@@ -169,6 +169,34 @@ class SawahModel {
     );
   }
 
+  /// Factory untuk model kosong (orElse fallback)
+  factory SawahModel.empty() {
+    final now = DateTime.now();
+    return SawahModel(
+      id: '',
+      userId: '',
+      nama: '',
+      latitude: 0,
+      longitude: 0,
+      luasHektar: 0,
+      jenisTanaman: '',
+      tanggalTanam: now,
+      tanggalPanenExpected: now,
+      umurTanamanHari: 0,
+      kelembaban: 0,
+      ph: 0,
+      temperatureCelsius: 0,
+      jenisAirTanah: '',
+      ketersediaanAir: '',
+      status: '',
+      statusKesehatan: '',
+      skorRisiko: 0,
+      idLogHama: const [],
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
   @override
   String toString() {
     return 'SawahModel(id: $id, nama: $nama, status: $status, kesehatan: $statusKesehatan)';

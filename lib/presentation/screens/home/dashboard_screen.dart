@@ -1,15 +1,31 @@
-// File: lib/presentation/screens/home/dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-// constants not required here
 import '../disease_detection/disease_detection_screen.dart';
 import '../chatbot/chatbot_screen.dart';
 import '../market/market_screen.dart';
 import '../field_management/sawah_screen.dart';
+import '../predictions/harvest_prediction_screen.dart';
 import '../../../data/models/sawah_model.dart';
 import '../../providers/app_state_providers.dart';
 
+// ─── Bottom Nav items definition ─────────────────────────────────────────────
+const _navItems = [
+  _NavItem(Icons.home_rounded, Icons.home_outlined, 'Beranda'),
+  _NavItem(Icons.spa_rounded, Icons.spa_outlined, 'Sawah'),
+  _NavItem(Icons.document_scanner_rounded, Icons.document_scanner_outlined, 'Scan'),
+  _NavItem(Icons.smart_toy_rounded, Icons.smart_toy_outlined, 'AI Chat'),
+  _NavItem(Icons.storefront_rounded, Icons.storefront_outlined, 'Pasar'),
+];
+
+class _NavItem {
+  final IconData active;
+  final IconData inactive;
+  final String label;
+  const _NavItem(this.active, this.inactive, this.label);
+}
+
+// ─── Dashboard Screen ─────────────────────────────────────────────────────────
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
@@ -17,18 +33,32 @@ class DashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _navAnimController;
+
   late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+    _navAnimController = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
     _pages = [
       const HomeTab(),
+      const SawahScreen(),
       const DiseaseDetectionScreen(),
       const ChatbotScreen(),
       const MarketScreen(),
     ];
+  }
+
+  @override
+  void dispose() {
+    _navAnimController.dispose();
+    super.dispose();
   }
 
   void navigateToTab(int index) {
@@ -38,40 +68,44 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(currentTabProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (child, anim) =>
-            FadeTransition(opacity: anim, child: child),
-        child: _pages[selectedIndex],
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
+        duration: const Duration(milliseconds: 280),
+        transitionBuilder: (child, anim) => FadeTransition(
+          opacity: anim,
+          child: child,
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.dashboard_rounded,
-                    Icons.dashboard_outlined, 'Dashboard'),
-                _buildNavItem(1, Icons.bug_report_rounded,
-                    Icons.bug_report_outlined, 'Hama'),
-                _buildNavItem(2, Icons.chat_bubble_rounded,
-                    Icons.chat_bubble_outlined, 'Chatbot'),
-                _buildNavItem(
-                    3, Icons.store_rounded, Icons.store_outlined, 'Pasar'),
-              ],
+        child: KeyedSubtree(
+          key: ValueKey<int>(selectedIndex),
+          child: _pages[selectedIndex],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomNav(selectedIndex),
+    );
+  }
+
+  Widget _buildBottomNav(int selectedIndex) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(
+              _navItems.length,
+              (i) => _buildNavItem(i, selectedIndex),
             ),
           ),
         ),
@@ -79,40 +113,50 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildNavItem(
-      int index, IconData active, IconData inactive, String label) {
-    final selectedIndex = ref.watch(currentTabProvider);
-    final isSelected = selectedIndex == index;
+  Widget _buildNavItem(int index, int selectedIndex) {
+    final item = _navItems[index];
+    final isSelected = index == selectedIndex;
+
     return GestureDetector(
       onTap: () => ref.read(currentTabProvider.notifier).state = index,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 18 : 12,
+          vertical: 8,
+        ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.08)
+              ? AppColors.primary.withValues(alpha: 0.1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? active : inactive,
-              color: isSelected ? AppColors.primary : AppColors.textHint,
-              size: 24,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isSelected ? item.active : item.inactive,
+                key: ValueKey<bool>(isSelected),
                 color: isSelected ? AppColors.primary : AppColors.textHint,
-                fontFamily: 'InterTight',
+                size: 22,
               ),
             ),
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              Text(
+                item.label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -120,7 +164,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-// ─── Home Tab ─────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// HOME TAB
+// ═══════════════════════════════════════════════════════════════════════════════
 
 class HomeTab extends ConsumerWidget {
   const HomeTab({super.key});
@@ -130,44 +176,58 @@ class HomeTab extends ConsumerWidget {
     final sawahList = ref.watch(sawahStateProvider);
     final scanHistory = ref.watch(hamaStateProvider);
 
-    // Dynamic Calculations
     final int activeFieldsCount = sawahList.length;
 
-    double avgHealth = 0.0;
+    double avgHealth = 100.0;
     if (sawahList.isNotEmpty) {
       final totalHealth = sawahList.fold<double>(
           0.0, (sum, sawah) => sum + (100.0 - sawah.skorRisiko.toDouble()));
       avgHealth = totalHealth / sawahList.length;
     }
 
-    // Colors according to average health
     Color healthColor = AppColors.success;
-    String healthLabel = 'Sehat';
+    String healthLabel = 'Sangat Baik';
     if (avgHealth < 50) {
       healthColor = AppColors.error;
-      healthLabel = 'Bahaya';
-    } else if (avgHealth < 80) {
+      healthLabel = 'Kritis';
+    } else if (avgHealth < 70) {
       healthColor = AppColors.warning;
       healthLabel = 'Waspada';
+    } else if (avgHealth < 85) {
+      healthColor = const Color(0xFFF9A825);
+      healthLabel = 'Sedang';
     }
 
-    // Dynamic Pest Risk
     final hasHighRiskPest = sawahList.any((s) => s.statusKesehatan == 'Sakit');
-    final String pestRisk = hasHighRiskPest ? 'Tinggi' : 'Rendah';
-    final Color pestColor =
-        hasHighRiskPest ? AppColors.error : AppColors.success;
+    final hasMedRiskPest = sawahList.any((s) => s.statusKesehatan == 'Risiko');
+    final String pestRisk =
+        hasHighRiskPest ? 'Tinggi' : hasMedRiskPest ? 'Sedang' : 'Rendah';
+    final Color pestColor = hasHighRiskPest
+        ? AppColors.error
+        : hasMedRiskPest
+            ? AppColors.warning
+            : AppColors.success;
 
-    // Harvest estimation calculation: ~6.2 tons per hectare on average
     double totalExpectedYield = 0.0;
     for (final s in sawahList) {
-      totalExpectedYield += s.luasHektar * 6.2;
+      totalExpectedYield += s.luasHektar * 6.2 * ((100 - s.skorRisiko) / 100);
     }
+
+    final now = DateTime.now();
+    final hour = now.hour;
+    final String greeting = hour < 11
+        ? 'Selamat Pagi ☀️'
+        : hour < 15
+            ? 'Selamat Siang 🌤️'
+            : hour < 18
+                ? 'Selamat Sore 🌅'
+                : 'Selamat Malam 🌙';
 
     return SafeArea(
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Header Area
+          // ─── Header ──────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -176,54 +236,49 @@ class HomeTab extends ConsumerWidget {
                   Hero(
                     tag: 'app-logo',
                     child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.success,
-                            AppColors.successLight,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        gradient: AppColors.lushGradient,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: const Center(
-                        child: Icon(
-                          Icons.agriculture_rounded,
-                          color: AppColors.textOnPrimary,
-                          size: 26,
-                        ),
+                        child: Text('🌾', style: TextStyle(fontSize: 24)),
                       ),
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Halo, Petani Karawang! 👋',
-                          style: TextStyle(
-                            fontSize: 22,
+                          greeting,
+                          style: const TextStyle(
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                             fontFamily: 'Poppins',
                           ),
                         ),
-                        SizedBox(height: 2),
-                        Row(
+                        const Row(
                           children: [
-                            Icon(Icons.location_on,
-                                size: 14, color: AppColors.primary),
-                            SizedBox(width: 4),
+                            Icon(Icons.location_on_rounded,
+                                size: 13, color: AppColors.primary),
+                            SizedBox(width: 3),
                             Text(
                               'Karawang, Jawa Barat',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 12,
                                 color: AppColors.textSecondary,
-                                fontFamily: 'InterTight',
+                                fontFamily: 'Inter',
                               ),
                             ),
                           ],
@@ -231,238 +286,76 @@ class HomeTab extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: Stack(
-                      children: [
-                        const Icon(Icons.notifications_active_outlined,
-                            size: 26),
-                        Positioned(
-                          right: 2,
-                          top: 2,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: AppColors.error,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const SizedBox(width: 4, height: 4),
-                          ),
-                        )
-                      ],
-                    ),
-                    onPressed: () => _showNotificationCenter(context),
+                  _buildIconBtn(
+                    Icons.notifications_outlined,
+                    badge: true,
+                    onTap: () => _showNotificationCenter(context),
                   ),
                   const SizedBox(width: 8),
-                  const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: AppColors.primary,
-                    child: Icon(Icons.person, color: Colors.white, size: 20),
+                  _buildIconBtn(
+                    Icons.person_outline_rounded,
+                    onTap: () {},
                   ),
                 ],
               ),
             ),
           ),
 
-          // Live Weather Banner
+          // ─── Weather Banner ───────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryDark],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'CUACA HARI INI',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.0,
-                              fontFamily: 'InterTight',
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            '🌤️ Hujan Ringan Sore Hari',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              _weatherChip(Icons.thermostat, '31°C'),
-                              _weatherChip(Icons.water_drop_outlined, '82%'),
-                              _weatherChip(Icons.air, '14 km/jam'),
-                              _weatherChip(
-                                  Icons.cloudy_snowing, 'Curah Tinggi'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.wb_cloudy_rounded,
-                        color: Colors.white70, size: 68),
-                  ],
-                ),
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: _WeatherBanner(),
             ),
           ),
 
-          // Statistics Dashboard Cards
+          // ─── Stat Cards ───────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Kondisi Pertanian Anda',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 64) / 2,
-                        child: _statCard(
-                          '$activeFieldsCount',
-                          'Sawah Aktif',
-                          Icons.agriculture_rounded,
-                          AppColors.primary,
-                        ),
-                      ),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 64) / 2,
-                        child: _statCard(
-                          '${avgHealth.toStringAsFixed(0)}%',
-                          healthLabel,
-                          Icons.favorite_rounded,
-                          healthColor,
-                        ),
-                      ),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 64) / 2,
-                        child: _statCard(
-                          pestRisk,
-                          'Risiko Hama',
-                          Icons.shield_rounded,
-                          pestColor,
-                        ),
-                      ),
-                      SizedBox(
-                        width: (MediaQuery.of(context).size.width - 64) / 2,
-                        child: _statCard(
-                          '${totalExpectedYield.toStringAsFixed(1)} T',
-                          'Est. Panen',
-                          Icons.calendar_month_rounded,
-                          AppColors.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Quick Actions Area
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Aksi Cepat',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                  _sectionTitle('Ringkasan Pertanian'),
                   const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: _quickActionItem(
-                          context,
-                          icon: Icons.add_circle_outline_rounded,
-                          label: 'Tambah\nSawah',
+                        child: _StatCard(
+                          value: '$activeFieldsCount',
+                          label: 'Sawah\nAktif',
+                          emoji: '🌾',
                           color: AppColors.primary,
-                          onTap: () => SawahScreen.showAddSawahDialog(context, ref),
+                          onTap: () => ref
+                              .read(currentTabProvider.notifier)
+                              .state = 1,
                         ),
                       ),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: _quickActionItem(
-                          context,
-                          icon: Icons.camera_alt_outlined,
-                          label: 'Pindai\nDaun',
-                          color: Colors.orange,
-                          onTap: () {
-                            final dashboard = context.findAncestorStateOfType<
-                                _DashboardScreenState>();
-                            dashboard?.navigateToTab(1);
-                          },
+                        child: _StatCard(
+                          value: '${avgHealth.toStringAsFixed(0)}%',
+                          label: healthLabel,
+                          emoji: '💚',
+                          color: healthColor,
                         ),
                       ),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: _quickActionItem(
-                          context,
-                          icon: Icons.chat_bubble_outline_rounded,
-                          label: 'Tanya\nAI',
-                          color: Colors.blue,
-                          onTap: () {
-                            final dashboard = context.findAncestorStateOfType<
-                                _DashboardScreenState>();
-                            dashboard?.navigateToTab(2);
-                          },
+                        child: _StatCard(
+                          value: pestRisk,
+                          label: 'Risiko\nHama',
+                          emoji: pestRisk == 'Rendah' ? '🛡️' : '⚠️',
+                          color: pestColor,
                         ),
                       ),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: _quickActionItem(
-                          context,
-                          icon: Icons.store_mall_directory_outlined,
-                          label: 'Harga\nPasar',
-                          color: Colors.purple,
-                          onTap: () {
-                            final dashboard = context.findAncestorStateOfType<
-                                _DashboardScreenState>();
-                            dashboard?.navigateToTab(3);
-                          },
+                        child: _StatCard(
+                          value: '${totalExpectedYield.toStringAsFixed(1)}T',
+                          label: 'Est.\nPanen',
+                          emoji: '📦',
+                          color: AppColors.accent,
                         ),
                       ),
                     ],
@@ -472,49 +365,132 @@ class HomeTab extends ConsumerWidget {
             ),
           ),
 
-          // Features List & Analytics Widgets
+          // ─── Quick Actions ────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Analisis & Rekomendasi AgroBrain',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Poppins',
-                    ),
+                  _sectionTitle('Aksi Cepat'),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      _QuickAction(
+                        emoji: '➕',
+                        label: 'Tambah\nSawah',
+                        color: AppColors.primary,
+                        onTap: () =>
+                            SawahScreen.showAddSawahDialog(context, ref),
+                      ),
+                      _QuickAction(
+                        emoji: '🔬',
+                        label: 'Scan\nDaun AI',
+                        color: Colors.orange.shade700,
+                        onTap: () =>
+                            ref.read(currentTabProvider.notifier).state = 2,
+                      ),
+                      _QuickAction(
+                        emoji: '🤖',
+                        label: 'Tanya\nAI Chat',
+                        color: Colors.blue.shade700,
+                        onTap: () =>
+                            ref.read(currentTabProvider.notifier).state = 3,
+                      ),
+                      _QuickAction(
+                        emoji: '📊',
+                        label: 'Analisis\nPanen',
+                        color: Colors.purple.shade600,
+                        onTap: () =>
+                            _showHarvestSheet(context, ref),
+                      ),
+                      _QuickAction(
+                        emoji: '💹',
+                        label: 'Harga\nPasar',
+                        color: Colors.teal.shade600,
+                        onTap: () =>
+                            ref.read(currentTabProvider.notifier).state = 4,
+                      ),
+                    ],
                   ),
+                ],
+              ),
+            ),
+          ),
+
+          // ─── Sawah Overview Cards ─────────────────────────────────────────
+          if (sawahList.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _sectionTitle('Kondisi Sawah'),
+                        TextButton(
+                          onPressed: () =>
+                              ref.read(currentTabProvider.notifier).state = 1,
+                          child: const Text('Lihat Semua',
+                              style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 170,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: sawahList.take(5).length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (context, i) =>
+                            _SawahMiniCard(sawah: sawahList[i], ref: ref),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // ─── Feature Cards Row ────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Fitur Unggulan AI'),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
-                        child: _featureCard(
-                          context,
-                          icon: Icons.analytics_rounded,
+                        child: _FeatureCard(
+                          emoji: '🧮',
                           title: 'Kalkulator Panen',
-                          subtitle: 'Simulasikan hasil panen padi Anda',
-                          color: Colors.blue,
-                          onTap: () =>
-                              _showHarvestPredictionCalculator(context, ref),
+                          subtitle: 'Prediksi hasil gabah dari data sawah Anda',
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
+                          ),
+                          onTap: () => _showHarvestSheet(context, ref),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _featureCard(
-                          context,
-                          icon: Icons.trending_up_rounded,
-                          title: 'Harga Gabah',
-                          subtitle: 'Prediksi GKP Rp5.700, GKG Rp6.800',
-                          color: Colors.teal,
-                          onTap: () {
-                            final dashboard = context.findAncestorStateOfType<
-                                _DashboardScreenState>();
-                            dashboard?.navigateToTab(3); // Go to Pasar
-                          },
+                        child: _FeatureCard(
+                          emoji: '📈',
+                          title: 'Prediksi Harga',
+                          subtitle: 'GKP: Rp5.900 · GKG: Rp6.850/kg',
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF00695C), Color(0xFF004D40)],
+                          ),
+                          onTap: () =>
+                              ref.read(currentTabProvider.notifier).state = 4,
                         ),
                       ),
                     ],
@@ -524,44 +500,34 @@ class HomeTab extends ConsumerWidget {
             ),
           ),
 
-          // Recent Activity Section
+          // ─── Recent Activity ──────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Aktivitas Terbaru',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
+                      _sectionTitle('Aktivitas Terbaru'),
                       TextButton(
-                        onPressed: () {
-                          final dashboard = context
-                              .findAncestorStateOfType<_DashboardScreenState>();
-                          dashboard
-                              ?.navigateToTab(1); // Go to pest scan history
-                        },
-                        child: const Text('Semua Riwayat',
+                        onPressed: () =>
+                            ref.read(currentTabProvider.notifier).state = 2,
+                        child: const Text('Semua',
                             style: TextStyle(
                                 color: AppColors.primary,
-                                fontWeight: FontWeight.bold)),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.border),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.04),
@@ -570,67 +536,58 @@ class HomeTab extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        if (scanHistory.isNotEmpty)
-                          ...scanHistory.take(3).map((scan) {
-                            final isLast = scanHistory.indexOf(scan) ==
-                                (scanHistory.length < 3
-                                    ? scanHistory.length - 1
-                                    : 2);
-                            Color riskColor = AppColors.primary;
-                            if (scan.tingkatRisiko == 'TINGGI') {
-                              riskColor = Colors.red;
-                            } else if (scan.tingkatRisiko == 'SEDANG') {
-                              riskColor = Colors.orange;
-                            }
-
-                            final sawah = sawahList.firstWhere(
-                              (s) => s.id == scan.sawahId,
-                              orElse: () => SawahModel(
-                                id: '',
-                                userId: '',
-                                nama: 'Sawah Karawang',
-                                latitude: 0,
-                                longitude: 0,
-                                luasHektar: 0,
-                                jenisTanaman: '',
-                                tanggalTanam: DateTime.now(),
-                                tanggalPanenExpected: DateTime.now(),
-                                umurTanamanHari: 0,
-                                kelembaban: 0,
-                                ph: 0,
-                                temperatureCelsius: 0,
-                                jenisAirTanah: '',
-                                ketersediaanAir: '',
-                                status: '',
-                                statusKesehatan: '',
-                                skorRisiko: 0,
-                                idLogHama: [],
-                                createdAt: DateTime.now(),
-                                updatedAt: DateTime.now(),
-                              ),
-                            );
-
-                            return _activityItem(
-                              icon: Icons.bug_report_rounded,
-                              title: '${scan.namaHama} Terdeteksi',
-                              subtitle:
-                                  '${sawah.nama} — ${scan.confidence * 100}% Akurasi',
-                              time: _formatDateTime(scan.detectedAt),
-                              color: riskColor,
-                              isLast: isLast,
-                            );
-                          })
-                        else
-                          const Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: Text('Belum ada aktivitas deteksi hama.',
-                                style:
-                                    TextStyle(color: AppColors.textSecondary)),
+                    child: scanHistory.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceGreen,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text('🌿',
+                                      style: TextStyle(fontSize: 22)),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Belum ada aktivitas deteksi.',
+                                  style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontFamily: 'Inter'),
+                                ),
+                              ],
+                            ),
                           )
-                      ],
-                    ),
+                        : Column(
+                            children: scanHistory.take(3).toList().map((scan) {
+                              final isLast = scanHistory.indexOf(scan) ==
+                                  (scanHistory.length < 3
+                                      ? scanHistory.length - 1
+                                      : 2);
+                              Color riskColor = AppColors.primary;
+                              if (scan.tingkatRisiko == 'TINGGI') {
+                                riskColor = AppColors.error;
+                              } else if (scan.tingkatRisiko == 'SEDANG') {
+                                riskColor = AppColors.warning;
+                              }
+                              final sawah = sawahList.firstWhere(
+                                (s) => s.id == scan.sawahId,
+                                orElse: () => SawahModel.empty(),
+                              );
+                              return _activityTile(
+                                icon: Icons.bug_report_rounded,
+                                title: scan.namaHama,
+                                subtitle: sawah.nama.isEmpty
+                                    ? 'Sawah Karawang'
+                                    : sawah.nama,
+                                time: _timeAgo(scan.detectedAt),
+                                color: riskColor,
+                                isLast: isLast,
+                              );
+                            }).toList(),
+                          ),
                   ),
                 ],
               ),
@@ -641,192 +598,62 @@ class HomeTab extends ConsumerWidget {
     );
   }
 
-  static Widget _weatherChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 14),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'InterTight',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _statCard(
-      String value, String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-              fontFamily: 'Poppins',
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 9,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'InterTight',
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _quickActionItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+  static Widget _buildIconBtn(IconData icon,
+      {bool badge = false, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
               boxShadow: [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
-              border:
-                  Border.all(color: color.withValues(alpha: 0.1), width: 1.5),
             ),
-            child: Icon(icon, color: color, size: 26),
+            child: Icon(icon, color: AppColors.textPrimary, size: 20),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-              fontFamily: 'InterTight',
+          if (badge)
+            Positioned(
+              right: 2,
+              top: 2,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: AppColors.error,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _featureCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.04),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        color: AppColors.textSecondary,
-                        fontFamily: 'InterTight',
-                      ),
-                      maxLines: 2,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+  static Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        fontFamily: 'Poppins',
       ),
     );
   }
 
-  Widget _activityItem({
+  static Widget _activityTile({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -841,157 +668,182 @@ class HomeTab extends ConsumerWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                            fontFamily: 'Poppins')),
                     const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                        fontFamily: 'InterTight',
-                      ),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                            fontFamily: 'Inter')),
+                  ],
+                ),
+              ),
+              Text(time,
+                  style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textHint,
+                      fontFamily: 'Inter')),
+            ],
+          ),
+        ),
+        if (!isLast)
+          const Divider(height: 1, indent: 72, color: AppColors.divider),
+      ],
+    );
+  }
+
+  static String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m lalu';
+    if (diff.inHours < 24) return '${diff.inHours}j lalu';
+    return '${diff.inDays}h lalu';
+  }
+
+  // ─── Notification Center ───────────────────────────────────────────────────
+  static void _showNotificationCenter(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.65,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Notifikasi Cerdas 🔔',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins')),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
               ),
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: AppColors.textHint,
-                  fontFamily: 'InterTight',
+              const Divider(height: 1, color: AppColors.border),
+              Expanded(
+                child: ListView(
+                  controller: controller,
+                  padding: const EdgeInsets.all(16),
+                  children: const [
+                    _NotifCard(
+                      title: 'Jadwal Pemupukan Susulan 🧪',
+                      desc:
+                          'Sawah Utama - Telukjambe (45 HST) memerlukan pemupukan Urea susulan hari ini.',
+                      time: 'Baru saja',
+                      color: AppColors.primary,
+                    ),
+                    _NotifCard(
+                      title: 'Peringatan Cuaca Buruk ⛈️',
+                      desc:
+                          'Prediksi hujan lebat + angin kencang di Karawang Barat besok sore. Pastikan drainase sawah lancar.',
+                      time: '1 jam lalu',
+                      color: AppColors.warning,
+                    ),
+                    _NotifCard(
+                      title: 'Risiko Hama Wereng ⚠️',
+                      desc:
+                          'Laporan hama Wereng Cokelat meningkat di Kecamatan Tempuran. Pantau berkala!',
+                      time: '3 jam lalu',
+                      color: AppColors.error,
+                    ),
+                    _NotifCard(
+                      title: 'Panen Mendekati 🌾',
+                      desc:
+                          'Sawah Blok B - Tempuran mendekati usia panen (75 HST). Persiapkan logistik sekitar 15 hari lagi.',
+                      time: '1 hari lalu',
+                      color: Colors.blue,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-        if (!isLast)
-          const Divider(height: 1, indent: 58, color: AppColors.divider),
-      ],
-    );
-  }
-
-  String _formatDateTime(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m lalu';
-    if (diff.inHours < 24) return '${diff.inHours}j lalu';
-    return '${diff.inDays} hari lalu';
-  }
-
-  // ─── Notification Center ───────────────────────────────────────────────────
-  void _showNotificationCenter(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Pusat Notifikasi Cerdas 🔔',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                )
-              ],
-            ),
-            const Divider(height: 24),
-            Expanded(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  _notifItem(
-                    context,
-                    title: 'Jadwal Pemupukan Susulan 🧪',
-                    desc:
-                        'Jadwal pemupukan Urea susulan untuk Sawah Utama - Telukjambe (HST 45) direkomendasikan hari ini.',
-                    time: 'Baru saja',
-                    color: AppColors.primary,
-                  ),
-                  _notifItem(
-                    context,
-                    title: 'Peringatan Cuaca Buruk ⛈️',
-                    desc:
-                        'Diprediksi terjadi hujan lebat disertai angin kencang di Karawang Barat besok sore. Pastikan saluran drainase sawah lancar!',
-                    time: '1 jam lalu',
-                    color: Colors.amber,
-                  ),
-                  _notifItem(
-                    context,
-                    title: 'Peringatan Risiko Hama Wereng ⚠️',
-                    desc:
-                        'Laporan hama Wereng Cokelat meningkat di Tempuran. Pantau berkala sawah Anda!',
-                    time: '3 jam lalu',
-                    color: Colors.red,
-                  ),
-                  _notifItem(
-                    context,
-                    title: 'Jadwal Panen Dekat 🌾',
-                    desc:
-                        'Sawah Blok B di Tempuran mendekati usia panen (75 HST). Persiapkan logistik panen sekitar 15 hari lagi.',
-                    time: '1 hari lalu',
-                    color: Colors.blue,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _notifItem(
-    BuildContext context, {
-    required String title,
-    required String desc,
-    required String time,
-    required Color color,
-  }) {
+  // ─── Harvest Calculator ─────────────────────────────────────────────────────
+  static void _showHarvestSheet(BuildContext context, WidgetRef ref) {
+    final sawahList = ref.read(sawahStateProvider);
+    if (sawahList.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Daftarkan sawah terlebih dahulu!'),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HarvestPredictionScreen()),
+    );
+  }
+}
+
+// ─── Notification Card ────────────────────────────────────────────────────────
+class _NotifCard extends StatelessWidget {
+  final String title;
+  final String desc;
+  final String time;
+  final Color color;
+
+  const _NotifCard({
+    required this.title,
+    required this.desc,
+    required this.time,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
-        border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -1000,350 +852,457 @@ class HomeTab extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: color,
-                  fontFamily: 'Poppins',
-                ),
+              Expanded(
+                child: Text(title,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: color,
+                        fontFamily: 'Poppins')),
               ),
-              Text(
-                time,
-                style: const TextStyle(
-                    fontSize: 10,
-                    color: AppColors.textHint,
-                    fontFamily: 'InterTight'),
-              ),
+              const SizedBox(width: 8),
+              Text(time,
+                  style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textHint,
+                      fontFamily: 'Inter')),
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            desc,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textPrimary,
-              height: 1.4,
-              fontFamily: 'InterTight',
+          Text(desc,
+              style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textPrimary,
+                  height: 1.4,
+                  fontFamily: 'Inter')),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Weather Banner Widget ────────────────────────────────────────────────────
+class _WeatherBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: AppColors.lushGradient,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'CUACA KARAWANG HARI INI',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
+                    fontFamily: 'Inter',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  '🌤️ Berawan & Hujan Ringan',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _chip(Icons.thermostat_rounded, '31°C'),
+                    _chip(Icons.water_drop_outlined, '82%'),
+                    _chip(Icons.air_rounded, '14 km/j'),
+                    _chip(Icons.umbrella_rounded, 'Curah Tinggi'),
+                  ],
+                ),
+              ],
             ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            children: [
+              const Text('🌧️', style: TextStyle(fontSize: 44)),
+              const SizedBox(height: 4),
+              Text(
+                'Cocok Irigasi',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 10,
+                  fontFamily: 'Inter',
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ─── Harvest Prediction Calculator ─────────────────────────────────────────
-  void _showHarvestPredictionCalculator(BuildContext context, WidgetRef ref) {
-    // sawah list not needed here; use providers in UI when required
-    final areaController = TextEditingController();
-    String? selectedPadi = 'Ciherang';
-    int? ageDays = 45;
+  static Widget _chip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 13),
+          const SizedBox(width: 5),
+          Text(label,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Inter')),
+        ],
+      ),
+    );
+  }
+}
 
-    // Choose active sawah if any (use sawahList directly when needed)
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+class _StatCard extends StatelessWidget {
+  final String value;
+  final String label;
+  final String emoji;
+  final Color color;
+  final VoidCallback? onTap;
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
+  const _StatCard({
+    required this.value,
+    required this.label,
+    required this.emoji,
+    required this.color,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-            left: 20,
-            right: 20,
-            top: 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Prediksi Hasil Panen AI 🌾',
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 22)),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontFamily: 'Poppins',
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 9,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Inter',
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Quick Action ─────────────────────────────────────────────────────────────
+class _QuickAction extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickAction({
+    required this.emoji,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.15),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 24)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                fontFamily: 'Inter',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Sawah Mini Card (horizontal scroll) ────────────────────────────────────
+class _SawahMiniCard extends StatelessWidget {
+  final SawahModel sawah;
+  final WidgetRef ref;
+
+  const _SawahMiniCard({required this.sawah, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    Color healthColor = AppColors.success;
+    String healthEmoji = '✅';
+    if (sawah.statusKesehatan == 'Sakit') {
+      healthColor = AppColors.error;
+      healthEmoji = '🚨';
+    } else if (sawah.statusKesehatan == 'Risiko') {
+      healthColor = AppColors.warning;
+      healthEmoji = '⚠️';
+    }
+
+    final progress = (sawah.umurTanamanHari / 115).clamp(0.0, 1.0);
+    final daysLeft =
+        sawah.tanggalPanenExpected.difference(DateTime.now()).inDays;
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(selectedSawahIdProvider.notifier).state = sawah.id;
+        ref.read(currentTabProvider.notifier).state = 1;
+      },
+      child: Container(
+        width: 180,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: healthColor.withValues(alpha: 0.25)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('🌾', style: TextStyle(fontSize: 20)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: healthColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$healthEmoji ${sawah.statusKesehatan}',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                ],
-              ),
-              const Text(
-                'Estimasi hasil panen gabah berdasarkan parameter luas sawah, jenis padi, dan umur tanam.',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                    fontFamily: 'InterTight'),
-              ),
-              const SizedBox(height: 20),
-
-              // Input Luas Sawah
-              const Text('Luas Sawah (Hektar)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-              const SizedBox(height: 6),
-              TextField(
-                controller: areaController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  hintText: 'Contoh: 2.5',
-                  prefixIcon:
-                      const Icon(Icons.straighten, color: AppColors.primary),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Dropdown Jenis Padi
-              const Text('Jenis Padi',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedPadi,
-                    isExpanded: true,
-                    items: [
-                      'Ciherang',
-                      'Inpari 32',
-                      'IR64',
-                      'Pandan Wangi',
-                      'Ketam Hitam'
-                    ]
-                        .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                        .toList(),
-                    onChanged: (val) {
-                      setModalState(() {
-                        selectedPadi = val;
-                      });
-                    },
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: healthColor),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              sawah.nama,
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'Poppins'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${sawah.luasHektar} Ha · ${sawah.jenisTanaman}',
+              style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter'),
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                backgroundColor: AppColors.border,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    progress > 0.85 ? AppColors.accent : AppColors.primary),
               ),
-              const SizedBox(height: 16),
-
-              // Input Umur Tanaman
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Umur Tanam: $ageDays HST (Hari Setelah Tanam)',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 12)),
-                ],
-              ),
-              Slider(
-                value: ageDays!.toDouble(),
-                min: 0,
-                max: 120,
-                divisions: 120,
-                label: '$ageDays HST',
-                activeColor: AppColors.primary,
-                inactiveColor: AppColors.border,
-                onChanged: (double val) {
-                  setModalState(() {
-                    ageDays = val.toInt();
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // Calculate Button
-              ElevatedButton(
-                onPressed: () {
-                  final area = double.tryParse(areaController.text) ?? 1.0;
-                  // Yield estimation: ~6.2 Tons per Hectare for Ciherang, with risk adjustments.
-                  double baseYield = 6.2;
-                  if (selectedPadi == 'Pandan Wangi') baseYield = 5.8;
-                  if (selectedPadi == 'IR64') baseYield = 6.0;
-
-                  double totalYield = area * baseYield;
-                  int daysLeft = (115 - ageDays!).clamp(0, 115);
-
-                  Navigator.pop(context); // Close inputs sheet
-
-                  // Show output dialog
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                      title: const Row(
-                        children: [
-                          Icon(Icons.analytics_rounded,
-                              color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text('Hasil Analitik AI',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                  color:
-                                      AppColors.primary.withValues(alpha: 0.2)),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('ESTIMASI HASIL PANEN',
-                                          style: TextStyle(
-                                              fontSize: 10,
-                                              color: AppColors.textSecondary,
-                                              fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                          '${totalYield.toStringAsFixed(1)} Ton',
-                                          style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
-                                              fontFamily: 'Poppins')),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12)),
-                                  child: const Icon(Icons.grain,
-                                      color: Colors.orange, size: 28),
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Sisa Waktu Panen:',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text(
-                                  daysLeft == 0
-                                      ? 'Sudah Waktunya Panen!'
-                                      : '$daysLeft Hari Lagi',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: AppColors.textPrimary)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Jenis Padi:',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text(selectedPadi!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: AppColors.textPrimary)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Rata-rata Produktivitas:',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text('$baseYield Ton/Ha',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: AppColors.textPrimary)),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          const SizedBox(height: 12),
-                          const Text(
-                            '💡 Tips Pertanian:',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: AppColors.primary),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            daysLeft > 30
-                                ? 'Fase pertumbuhan tanaman Anda sedang aktif. Optimalkan pemupukan nitrogen dan fosfat.'
-                                : 'Mendekati masa panen. Kurangi suplai irigasi untuk mencegah rebah tanaman dan jamur leher.',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                                height: 1.4),
-                          ),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Tutup',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${sawah.umurTanamanHari} HST',
+                  style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textSecondary,
+                      fontFamily: 'Inter'),
                 ),
-                child: const Text(
-                  'Hitung Perkiraan Panen',
+                Text(
+                  daysLeft > 0 ? '$daysLeft hari' : 'Panen!',
                   style: TextStyle(
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: Colors.white),
+                      color: daysLeft <= 14 ? AppColors.accent : AppColors.primary,
+                      fontFamily: 'Inter'),
                 ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Feature Card ─────────────────────────────────────────────────────────────
+class _FeatureCard extends StatelessWidget {
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final LinearGradient gradient;
+  final VoidCallback onTap;
+
+  const _FeatureCard({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: gradient.colors.first.withValues(alpha: 0.35),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 28)),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.arrow_forward_rounded,
+                      color: Colors.white, size: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                fontFamily: 'Poppins',
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 10,
+                fontFamily: 'Inter',
+              ),
+              maxLines: 2,
+            ),
+          ],
         ),
       ),
     );

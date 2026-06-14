@@ -1,7 +1,5 @@
-// Use this entrypoint for Flutlab to avoid mismatch with pubspec and native-disabled features.
-// If you want normal native build, you can revert this file and use lib/main_flutlab.dart accordingly.
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/screens/splash_screen.dart';
@@ -9,11 +7,29 @@ import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/home/dashboard_screen.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock portrait orientation
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Status bar styling
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+
+  runApp(const ProviderScope(child: PadiGuardApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PadiGuardApp extends StatelessWidget {
+  const PadiGuardApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +46,12 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
       },
       builder: (context, child) {
-        return child ?? const Placeholder();
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(1.0),
+          ),
+          child: child ?? const Placeholder(),
+        );
       },
     );
   }
