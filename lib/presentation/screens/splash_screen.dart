@@ -228,9 +228,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           position: _slideUp,
                           child: Column(
                             children: [
-                              const Text(
+                              Text(
                                 AppConstants.appName,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,

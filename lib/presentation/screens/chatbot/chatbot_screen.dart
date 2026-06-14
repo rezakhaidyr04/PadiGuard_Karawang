@@ -134,7 +134,7 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
           Container(
             width: 40,
             height: 40,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: AppColors.lushGradient,
               shape: BoxShape.circle,
             ),
@@ -427,8 +427,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Text('⚙️', style: TextStyle(fontSize: 20)),
             SizedBox(width: 8),
             Text('Konfigurasi Local AI',
@@ -526,7 +526,7 @@ class _MessageBubble extends StatelessWidget {
               width: 32,
               height: 32,
               margin: const EdgeInsets.only(right: 8),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: AppColors.lushGradient,
                 shape: BoxShape.circle,
               ),

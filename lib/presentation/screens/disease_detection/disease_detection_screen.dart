@@ -135,11 +135,11 @@ class _DiseaseDetectionScreenState
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Deteksi Hama AI 🔬',
                             style: TextStyle(
                               fontSize: 22,
@@ -148,8 +148,8 @@ class _DiseaseDetectionScreenState
                               fontFamily: 'Poppins',
                             ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
+                          const SizedBox(height: 2),
+                          const Text(
                             'Ambil foto daun untuk diagnosa instan',
                             style: TextStyle(
                               fontSize: 13,
@@ -243,11 +243,10 @@ class _DiseaseDetectionScreenState
             ),
 
             // ─── Scan History ─────────────────────────────────────────────
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 20, 0, 6),
-                child: Text(
-                  'Riwayat Scan Penyakit',
+                padding: const EdgeInsets.fromLTRB(20, 20, 0, 6),
+                child: const Text('Riwayat Scan Penyakit',
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -420,9 +419,9 @@ class _DiseaseDetectionScreenState
                       color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Foto daun padi untuk mendapatkan\ndiagnosa dan rekomendasi AI secara instan.',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                       height: 1.4,

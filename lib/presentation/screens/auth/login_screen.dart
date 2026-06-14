@@ -320,10 +320,10 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                               const SizedBox(height: 24),
                               // Divider
-                              const Row(children: [
-                                Expanded(
+                              Row(children: [
+                                const Expanded(
                                     child: Divider(color: AppColors.border)),
-                              Padding(
+                                const Padding(
                                   padding: EdgeInsets.symmetric(horizontal: 14),
                                   child: Text(
                                     'atau',
@@ -331,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: AppColors.textHint, fontSize: 13),
                                   ),
                                 ),
-                                Expanded(
+                                const Expanded(
                                     child: Divider(color: AppColors.border)),
                               ]),
                               const SizedBox(height: 20),
