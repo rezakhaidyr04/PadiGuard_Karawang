@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../home/dashboard_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -44,13 +45,35 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  // Email admin khusus untuk panel admin (demo / tugas kuliah)
+  static const _adminEmail = 'admin@padiguard.id';
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
     setState(() => _isLoading = false);
-    _goToDashboard();
+
+    final email = _emailController.text.trim().toLowerCase();
+    if (email == _adminEmail) {
+      _goToAdminDashboard();
+    } else {
+      _goToDashboard();
+    }
+  }
+
+  void _goToAdminDashboard() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const AdminDashboardScreen(),
+        transitionsBuilder: (_, anim, __, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 450),
+      ),
+    );
   }
 
   void _goToDashboard() {
@@ -225,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 },
                                 decoration: InputDecoration(
                                   labelText: 'Email',
-                                  hintText: 'petani@karawang.com',
+                                  hintText: 'petani@karawang.com  (admin: admin@padiguard.id)',
                                   prefixIcon: Container(
                                     margin: const EdgeInsets.all(12),
                                     padding: const EdgeInsets.all(8),

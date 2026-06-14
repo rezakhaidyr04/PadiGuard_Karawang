@@ -219,6 +219,19 @@ class HamaNotifier extends StateNotifier<List<HamaModel>> {
   void addScan(HamaModel scan) {
     state = [scan, ...state];
   }
+
+  void toggleResolveStatus(String hamaId) {
+    state = [
+      for (final h in state)
+        if (h.id == hamaId)
+          h.copyWith(
+            resolved: !h.resolved,
+            resolvedAt: !h.resolved ? DateTime.now() : null,
+          )
+        else
+          h
+    ];
+  }
 }
 
 final hamaStateProvider =
