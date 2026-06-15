@@ -8,6 +8,10 @@ import '../field_management/sawah_screen.dart';
 import '../predictions/harvest_prediction_screen.dart';
 import '../../../data/models/sawah_model.dart';
 import '../../providers/app_state_providers.dart';
+import '../auth/login_screen.dart';
+import '../profile/edit_profile_screen.dart';
+import '../profile/settings_screen.dart';
+import '../profile/help_faq_screen.dart';
 
 // ─── Bottom Nav items definition ─────────────────────────────────────────────
 const _navItems = [
@@ -294,7 +298,7 @@ class HomeTab extends ConsumerWidget {
                   const SizedBox(width: 8),
                   _buildIconBtn(
                     Icons.person_outline_rounded,
-                    onTap: () {},
+                    onTap: () => _showProfileSheet(context),
                   ),
                 ],
               ),
@@ -818,6 +822,248 @@ class HomeTab extends ConsumerWidget {
     }
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const HarvestPredictionScreen()),
+    );
+  }
+
+  // ─── Profile Sheet with Logout ─────────────────────────────────────────────
+  static void _showProfileSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Profile avatar
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.lushGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text('👨‍🌾', style: TextStyle(fontSize: 36)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Petani Karawang',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'petani@karawang.com',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    fontFamily: 'Inter',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceGreen,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified_rounded,
+                          color: AppColors.primary, size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'Pengguna Aktif · Karawang',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Divider(height: 1, color: AppColors.border),
+                const SizedBox(height: 8),
+                // Menu items
+                _profileMenuItem(
+                  icon: Icons.person_rounded,
+                  label: 'Edit Profil',
+                  color: AppColors.primary,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const EditProfileScreen()),
+                    );
+                  },
+                ),
+                _profileMenuItem(
+                  icon: Icons.settings_rounded,
+                  label: 'Pengaturan',
+                  color: AppColors.secondary,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                ),
+                _profileMenuItem(
+                  icon: Icons.help_outline_rounded,
+                  label: 'Bantuan & FAQ',
+                  color: AppColors.info,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const HelpFaqScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 4),
+                const Divider(height: 1, color: AppColors.border),
+                const SizedBox(height: 4),
+                // Logout
+                _profileMenuItem(
+                  icon: Icons.logout_rounded,
+                  label: 'Keluar',
+                  color: AppColors.error,
+                  onTap: () {
+                    Navigator.pop(context); // close bottom sheet
+                    _confirmLogout(context);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _profileMenuItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: color == AppColors.error ? AppColors.error : AppColors.textPrimary,
+          fontFamily: 'Poppins',
+        ),
+      ),
+      trailing: Icon(Icons.chevron_right_rounded,
+          color: AppColors.textHint, size: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+
+  static void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: AppColors.error, size: 22),
+            SizedBox(width: 8),
+            Text(
+              'Keluar dari Akun?',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Anda akan dikembalikan ke halaman login.',
+          style: TextStyle(fontFamily: 'Inter', color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal',
+                style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // close dialog
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              minimumSize: const Size(90, 42),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+            child: const Text('Keluar',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 }

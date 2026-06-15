@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../home/dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -341,47 +342,6 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                 ),
                               ),
-                              const SizedBox(height: 24),
-                              // Divider
-                              Row(children: [
-                                const Expanded(
-                                    child: Divider(color: AppColors.border)),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 14),
-                                  child: Text(
-                                    'atau',
-                                    style: TextStyle(
-                                        color: AppColors.textHint, fontSize: 13),
-                                  ),
-                                ),
-                                const Expanded(
-                                    child: Divider(color: AppColors.border)),
-                              ]),
-                              const SizedBox(height: 20),
-                              // Demo button
-                              SizedBox(
-                                width: double.infinity,
-                                height: 54,
-                                child: OutlinedButton.icon(
-                                  onPressed: _goToDashboard,
-                                  icon: const Text('🌾',
-                                      style: TextStyle(fontSize: 20)),
-                                  label: const Text(
-                                    'Coba Demo Tanpa Login',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.primary,
-                                    side: const BorderSide(
-                                        color: AppColors.primary, width: 1.5),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16)),
-                                  ),
-                                ),
-                              ),
                               const SizedBox(height: 28),
                               // Register link
                               Center(
@@ -395,7 +355,18 @@ class _LoginScreenState extends State<LoginScreen>
                                       const TextSpan(text: 'Belum punya akun? '),
                                       WidgetSpan(
                                         child: GestureDetector(
-                                          onTap: () {},
+                                          onTap: () {
+                                            Navigator.of(context).pushReplacement(
+                                              PageRouteBuilder(
+                                                pageBuilder: (_, __, ___) => const RegisterScreen(),
+                                                transitionsBuilder: (_, anim, __, child) => FadeTransition(
+                                                  opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+                                                  child: child,
+                                                ),
+                                                transitionDuration: const Duration(milliseconds: 450),
+                                              ),
+                                            );
+                                          },
                                           child: const Text(
                                             'Daftar Sekarang',
                                             style: TextStyle(
