@@ -1,0 +1,51 @@
+name: karawang_agrobrain
+description: AI Smart Farming Asisten Berbasis Smartphone untuk Kabupaten Karawang
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase (Cloud-compatible)
+  firebase_core: ^4.10.0
+  firebase_auth: ^6.5.2
+  cloud_firestore: ^6.5.0
+  cloud_functions: ^6.3.2
+
+  # State Management
+  flutter_riverpod: ^2.4.0
+
+  # Networking & API
+  dio: ^5.3.1
+
+  # UI/UX
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
+
+  # Utilities
+  logger: ^2.0.1
+
+  # Image handling
+  image: ^4.1.0
+  image_picker: ^1.0.7
+
+  # URL Launcher (for WhatsApp integration)
+  url_launcher: ^6.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.6
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/data/
