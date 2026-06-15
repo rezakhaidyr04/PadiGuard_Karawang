@@ -1,7 +1,7 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\flutter
-FLUTTER_APPLICATION_PATH=D:\PadiGuard_Karawang
-FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=D:\PadiGuard_Karawang\ios\Flutter\ephemeral\Packages\.packages\FlutterFramework
+FLUTTER_ROOT=C:\Android\flutter_windows_3.3.9-stable
+FLUTTER_APPLICATION_PATH=D:\Project Laravel\PadiGuard_Karawang
+FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=D:\Project Laravel\PadiGuard_Karawang\ios\Flutter\ephemeral\Packages\.packages\FlutterFramework
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib\main.dart
 FLUTTER_BUILD_DIR=build
