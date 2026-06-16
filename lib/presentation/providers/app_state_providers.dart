@@ -1,5 +1,9 @@
 // File: lib/presentation/providers/app_state_providers.dart
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../data/models/sawah_model.dart';
 import '../../data/models/hama_model.dart';
 import '../../core/services/local_ollama_chat_service.dart';
@@ -244,7 +248,11 @@ final hamaStateProvider =
 // -----------------------------------------------------------------------------
 
 class ChatbotNotifier extends StateNotifier<List<Map<String, dynamic>>> {
-  ChatbotNotifier() : super(_initialMessages());
+  ChatbotNotifier() : super(_initialMessages()) {
+    _loadFromPrefs();
+  }
+
+  static const _prefsKey = 'chatbot_messages_v1';
 
   static List<Map<String, dynamic>> _initialMessages() {
     return [
@@ -257,6 +265,56 @@ class ChatbotNotifier extends StateNotifier<List<Map<String, dynamic>>> {
     ];
   }
 
+  Future<void> _loadFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefsKey);
+      if (raw == null || raw.trim().isEmpty) return;
+
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return;
+
+      final loaded = decoded.whereType<Map>().map<Map<String, dynamic>>((e) {
+        final text = e['text'] as String? ?? '';
+        final isUser = e['isUser'] as bool? ?? false;
+        final tsMillis =
+            e['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch;
+
+        return {
+          'text': text,
+          'isUser': isUser,
+          'timestamp': DateTime.fromMillisecondsSinceEpoch(tsMillis),
+        };
+      }).toList();
+
+      if (loaded.isNotEmpty) {
+        state = loaded;
+      }
+    } catch (_) {
+      // ignore load errors
+    }
+  }
+
+  Future<void> _saveToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final json = state.map((m) {
+        final ts = m['timestamp'] as DateTime;
+        return {
+          'text': m['text'] as String,
+          'isUser': m['isUser'] as bool,
+          'timestamp': ts.millisecondsSinceEpoch,
+        };
+      }).toList();
+
+      // Store as JSON string
+      await prefs.setString(_prefsKey, jsonEncode(json));
+    } catch (_) {
+      // ignore save errors
+    }
+  }
+
   void addMessage(String text, bool isUser) {
     state = [
       ...state,
@@ -266,10 +324,12 @@ class ChatbotNotifier extends StateNotifier<List<Map<String, dynamic>>> {
         'timestamp': DateTime.now(),
       }
     ];
+    _saveToPrefs();
   }
 
   void resetConversation() {
     state = _initialMessages();
+    _saveToPrefs();
   }
 
   Future<void> generateBotResponse(

@@ -37,6 +37,9 @@ dependencies:
   # URL Launcher (for WhatsApp integration)
   url_launcher: ^6.2.4
 
+  # Local storage (for chatbot persistence)
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

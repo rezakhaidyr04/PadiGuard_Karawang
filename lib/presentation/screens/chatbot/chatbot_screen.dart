@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../providers/app_state_providers.dart';
+import 'markdown_like_text.dart';
 
 class ChatbotScreen extends ConsumerStatefulWidget {
   const ChatbotScreen({super.key});
@@ -16,6 +20,10 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
   final _scrollController = ScrollController();
   bool _isTyping = false;
 
+  // Status AI (Ollama vs offline rule-based)
+  String? _aiStatusText;
+  Timer? _aiStatusTimer;
+
   late AnimationController _typingController;
   late Animation<double> _dot1, _dot2, _dot3;
 
@@ -27,18 +35,15 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
       vsync: this,
     )..repeat();
 
-    _dot1 = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-            parent: _typingController,
-            curve: const Interval(0.0, 0.4, curve: Curves.easeInOut)));
-    _dot2 = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-            parent: _typingController,
-            curve: const Interval(0.2, 0.6, curve: Curves.easeInOut)));
-    _dot3 = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-            parent: _typingController,
-            curve: const Interval(0.4, 0.8, curve: Curves.easeInOut)));
+    _dot1 = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _typingController,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeInOut)));
+    _dot2 = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _typingController,
+        curve: const Interval(0.2, 0.6, curve: Curves.easeInOut)));
+    _dot3 = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+        parent: _typingController,
+        curve: const Interval(0.4, 0.8, curve: Curves.easeInOut)));
   }
 
   @override
@@ -46,6 +51,7 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
     _controller.dispose();
     _scrollController.dispose();
     _typingController.dispose();
+    _aiStatusTimer?.cancel();
     super.dispose();
   }
 
@@ -69,11 +75,24 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
     if (preset == null) _controller.clear();
 
     ref.read(chatbotStateProvider.notifier).addMessage(text, true);
-    setState(() => _isTyping = true);
+    setState(() {
+      _isTyping = true;
+      _aiStatusText = 'Memproses dengan Ollama lokal...';
+    });
     _scrollToBottom();
 
     final host = ref.read(ollamaHostProvider);
     final model = ref.read(ollamaModelProvider);
+
+    // If Ollama takes too long/fails, show offline status. Since notifier
+    // doesn't expose which path succeeded, we approximate with a timer.
+    _aiStatusTimer?.cancel();
+    _aiStatusTimer = Timer(const Duration(milliseconds: 2000), () {
+      if (!mounted) return;
+      setState(() {
+        _aiStatusText = 'Mode offline: panduan berbasis aturan';
+      });
+    });
 
     Future.delayed(const Duration(milliseconds: 1400), () {
       if (!mounted) return;
@@ -82,7 +101,12 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
             ollamaHost: host,
             ollamaModel: model,
           );
-      setState(() => _isTyping = false);
+      _aiStatusTimer?.cancel();
+      if (!mounted) return;
+      setState(() {
+        _isTyping = false;
+        _aiStatusText = null;
+      });
       _scrollToBottom();
     });
   }
@@ -236,7 +260,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
                         'Jadwal dan dosis pemupukan padi yang benar?'),
                     _chip('🍄 Penyakit blast',
                         'Bagaimana cara mengatasi blast leher padi?'),
-                    _chip('🐀 Hama tikus', 'Cara efektif mengusir tikus sawah?'),
+                    _chip(
+                        '🐀 Hama tikus', 'Cara efektif mengusir tikus sawah?'),
                   ],
                 ),
               ),
@@ -258,13 +283,15 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
                       maxLines: 4,
                       minLines: 1,
                       style: const TextStyle(
-                          fontSize: 14, fontFamily: 'Inter', color: AppColors.textPrimary),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          color: AppColors.textPrimary),
                       decoration: const InputDecoration(
                         hintText: 'Tanya tentang padi, hama, pupuk...',
                         hintStyle: TextStyle(
                             color: AppColors.textHint, fontFamily: 'Inter'),
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 12),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                         border: InputBorder.none,
                       ),
                       onSubmitted: (_) => _sendMessage(),
@@ -342,29 +369,49 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
                 offset: const Offset(0, 2)),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🤖', style: TextStyle(fontSize: 14)),
-            const SizedBox(width: 8),
-            AnimatedBuilder(
-              animation: _typingController,
-              builder: (_, __) => Row(
-                children: [
-                  _dot(_dot1.value),
-                  const SizedBox(width: 4),
-                  _dot(_dot2.value),
-                  const SizedBox(width: 4),
-                  _dot(_dot3.value),
-                ],
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🤖', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 8),
+                AnimatedBuilder(
+                  animation: _typingController,
+                  builder: (_, __) => Row(
+                    children: [
+                      _dot(_dot1.value),
+                      const SizedBox(width: 4),
+                      _dot(_dot2.value),
+                      const SizedBox(width: 4),
+                      _dot(_dot3.value),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'mengetik...',
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      fontFamily: 'Inter'),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            const Text('mengetik...',
+            if (_aiStatusText != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _aiStatusText!,
                 style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                    fontFamily: 'Inter')),
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -388,7 +435,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         title: const Text('Reset Percakapan?',
-            style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            style:
+                TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
         content: const Text(
           'Semua pesan akan dihapus dan percakapan dimulai ulang.',
           style: TextStyle(fontFamily: 'Inter'),
@@ -410,7 +458,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
                   borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('Reset',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -418,8 +467,7 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
   }
 
   void _showSettingsDialog() {
-    final hostCtrl =
-        TextEditingController(text: ref.read(ollamaHostProvider));
+    final hostCtrl = TextEditingController(text: ref.read(ollamaHostProvider));
     final modelCtrl =
         TextEditingController(text: ref.read(ollamaModelProvider));
 
@@ -444,7 +492,9 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
             const Text(
               'Konfigurasikan server Ollama lokal Anda untuk mengaktifkan chatbot AI offline.',
               style: TextStyle(
-                  fontSize: 12, color: AppColors.textSecondary, fontFamily: 'Inter'),
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter'),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -461,8 +511,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
               decoration: const InputDecoration(
                 labelText: 'Model Name',
                 hintText: 'llama3, gemma, mistral',
-                prefixIcon:
-                    Icon(Icons.model_training_rounded, color: AppColors.primary),
+                prefixIcon: Icon(Icons.model_training_rounded,
+                    color: AppColors.primary),
               ),
             ),
           ],
@@ -493,7 +543,8 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
                   borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('Simpan',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -514,6 +565,8 @@ class _MessageBubble extends StatelessWidget {
     final String time =
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 
+    final textColor = isUser ? Colors.white : AppColors.textPrimary;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -531,7 +584,8 @@ class _MessageBubble extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Center(
-                  child: Text('🤖', style: TextStyle(fontSize: 16))),
+                child: Text('🤖', style: TextStyle(fontSize: 16)),
+              ),
             ),
           ],
           Flexible(
@@ -539,12 +593,9 @@ class _MessageBubble extends StatelessWidget {
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                gradient: isUser
-                    ? AppColors.lushGradient
-                    : null,
+                gradient: isUser ? AppColors.lushGradient : null,
                 color: isUser ? null : Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
@@ -556,9 +607,7 @@ class _MessageBubble extends StatelessWidget {
                       ? const Radius.circular(4)
                       : const Radius.circular(18),
                 ),
-                border: isUser
-                    ? null
-                    : Border.all(color: AppColors.border),
+                border: isUser ? null : Border.all(color: AppColors.border),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.04),
@@ -570,16 +619,10 @@ class _MessageBubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    msg['text'] as String,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      color: isUser
-                          ? Colors.white
-                          : AppColors.textPrimary,
-                      height: 1.5,
-                      fontFamily: 'Inter',
-                    ),
+                  MarkdownLikeText(
+                    text: msg['text'] as String,
+                    textColor: textColor,
+                    fontSize: 13.5,
                   ),
                   const SizedBox(height: 5),
                   Align(
@@ -588,9 +631,7 @@ class _MessageBubble extends StatelessWidget {
                       time,
                       style: TextStyle(
                         fontSize: 9,
-                        color: isUser
-                            ? Colors.white70
-                            : AppColors.textHint,
+                        color: isUser ? Colors.white70 : AppColors.textHint,
                         fontFamily: 'Inter',
                       ),
                     ),

@@ -17,7 +17,8 @@ import '../profile/help_faq_screen.dart';
 const _navItems = [
   _NavItem(Icons.home_rounded, Icons.home_outlined, 'Beranda'),
   _NavItem(Icons.spa_rounded, Icons.spa_outlined, 'Sawah'),
-  _NavItem(Icons.document_scanner_rounded, Icons.document_scanner_outlined, 'Scan'),
+  _NavItem(
+      Icons.document_scanner_rounded, Icons.document_scanner_outlined, 'Scan'),
   _NavItem(Icons.smart_toy_rounded, Icons.smart_toy_outlined, 'AI Chat'),
   _NavItem(Icons.storefront_rounded, Icons.storefront_outlined, 'Pasar'),
 ];
@@ -204,8 +205,11 @@ class HomeTab extends ConsumerWidget {
 
     final hasHighRiskPest = sawahList.any((s) => s.statusKesehatan == 'Sakit');
     final hasMedRiskPest = sawahList.any((s) => s.statusKesehatan == 'Risiko');
-    final String pestRisk =
-        hasHighRiskPest ? 'Tinggi' : hasMedRiskPest ? 'Sedang' : 'Rendah';
+    final String pestRisk = hasHighRiskPest
+        ? 'Tinggi'
+        : hasMedRiskPest
+            ? 'Sedang'
+            : 'Rendah';
     final Color pestColor = hasHighRiskPest
         ? AppColors.error
         : hasMedRiskPest
@@ -293,7 +297,7 @@ class HomeTab extends ConsumerWidget {
                   _buildIconBtn(
                     Icons.notifications_outlined,
                     badge: true,
-                    onTap: () => _showNotificationCenter(context),
+                    onTap: () => _showNotificationCenter(ref, context),
                   ),
                   const SizedBox(width: 8),
                   _buildIconBtn(
@@ -330,9 +334,8 @@ class HomeTab extends ConsumerWidget {
                           label: 'Sawah\nAktif',
                           emoji: '🌾',
                           color: AppColors.primary,
-                          onTap: () => ref
-                              .read(currentTabProvider.notifier)
-                              .state = 1,
+                          onTap: () =>
+                              ref.read(currentTabProvider.notifier).state = 1,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -405,8 +408,7 @@ class HomeTab extends ConsumerWidget {
                         emoji: '📊',
                         label: 'Analisis\nPanen',
                         color: Colors.purple.shade600,
-                        onTap: () =>
-                            _showHarvestSheet(context, ref),
+                        onTap: () => _showHarvestSheet(context, ref),
                       ),
                       _QuickAction(
                         emoji: '💹',
@@ -722,7 +724,101 @@ class HomeTab extends ConsumerWidget {
   }
 
   // ─── Notification Center ───────────────────────────────────────────────────
-  static void _showNotificationCenter(BuildContext context) {
+  static void _showNotificationCenter(WidgetRef ref, BuildContext context) {
+    final sawahList = ref.read(sawahStateProvider);
+    final hamaList = ref.read(hamaStateProvider);
+
+    final now = DateTime.now();
+
+    // 1) Hama risiko tinggi yang belum resolved
+    final highRiskHama = hamaList
+        .where((h) => h.tingkatRisiko == 'TINGGI' && !h.resolved)
+        .toList()
+      ..sort((a, b) => b.detectedAt.compareTo(a.detectedAt));
+
+    // 2) Sawah mendekati panen (<= 14 hari)
+    final nearHarvestSawah = sawahList
+        .map((s) => MapEntry(s, s.tanggalPanenExpected.difference(now).inDays))
+        .where((e) => e.value <= 14)
+        .toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+
+    // 3) Sawah kritis (skor risiko tinggi / status sakit)
+    final criticalSawah = sawahList
+        .where((s) => s.statusKesehatan == 'Sakit' || s.skorRisiko >= 50)
+        .toList()
+      ..sort((a, b) => b.skorRisiko.compareTo(a.skorRisiko));
+
+    // Build notification cards
+    final List<_NotifCard> cards = [];
+
+    for (final hama in highRiskHama.take(4)) {
+      final sawah = sawahList
+          .where((s) => s.id == hama.sawahId)
+          .cast<SawahModel?>()
+          .firstWhere((s) => s?.id == hama.sawahId, orElse: () => null);
+
+      final sawahName =
+          (sawah?.nama.isEmpty ?? true) ? 'Sawah Anda' : sawah!.nama;
+
+      cards.add(
+        _NotifCard(
+          title: 'Risiko Hama ${hama.namaHama} ⚠️',
+          desc:
+              '$sawahName terdeteksi hama berisiko tinggi. Tingkat keyakinan: ${(hama.confidence * 100).toStringAsFixed(0)}%.',
+          time: _timeAgo(hama.detectedAt),
+          color: AppColors.error,
+        ),
+      );
+    }
+
+    for (final entry in nearHarvestSawah.take(4)) {
+      final s = entry.key;
+      final daysLeft = entry.value;
+      final daysSafe = daysLeft < 0 ? 0 : daysLeft;
+
+      cards.add(
+        _NotifCard(
+          title: 'Panen Mendekati 🌾',
+          desc:
+              '${s.nama} mendekati usia panen (±$daysLeft hari lagi). Persiapkan logistik dan jadwal panen.',
+          time: '$daysSafe hari',
+          color: Colors.blue,
+        ),
+      );
+    }
+
+    for (final s in criticalSawah.take(3)) {
+      if (cards.length >= 8) break;
+      final riskText = s.skorRisiko >= 70
+          ? 'kritis'
+          : s.skorRisiko >= 50
+              ? 'tinggi'
+              : 'sedang';
+
+      cards.add(
+        _NotifCard(
+          title: 'Perlu Perhatian: Kondisi Sawah ${riskText} 🚨',
+          desc:
+              '${s.nama} memiliki status ${s.statusKesehatan} dengan skor risiko ${s.skorRisiko}/100. Pertimbangkan pemeriksaan lanjutan dan penyesuaian manajemen air/pemupukan.',
+          time: _timeAgo(s.updatedAt),
+          color: AppColors.warning,
+        ),
+      );
+    }
+
+    if (cards.isEmpty) {
+      cards.add(
+        _NotifCard(
+          title: 'Semua Sistem Aman ✅',
+          desc:
+              'Tidak ada peringatan kritis dari data sawah atau hasil scan hama saat ini.',
+          time: 'Baru saja',
+          color: AppColors.success,
+        ),
+      );
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -769,36 +865,7 @@ class HomeTab extends ConsumerWidget {
                 child: ListView(
                   controller: controller,
                   padding: const EdgeInsets.all(16),
-                  children: const [
-                    _NotifCard(
-                      title: 'Jadwal Pemupukan Susulan 🧪',
-                      desc:
-                          'Sawah Utama - Telukjambe (45 HST) memerlukan pemupukan Urea susulan hari ini.',
-                      time: 'Baru saja',
-                      color: AppColors.primary,
-                    ),
-                    _NotifCard(
-                      title: 'Peringatan Cuaca Buruk ⛈️',
-                      desc:
-                          'Prediksi hujan lebat + angin kencang di Karawang Barat besok sore. Pastikan drainase sawah lancar.',
-                      time: '1 jam lalu',
-                      color: AppColors.warning,
-                    ),
-                    _NotifCard(
-                      title: 'Risiko Hama Wereng ⚠️',
-                      desc:
-                          'Laporan hama Wereng Cokelat meningkat di Kecamatan Tempuran. Pantau berkala!',
-                      time: '3 jam lalu',
-                      color: AppColors.error,
-                    ),
-                    _NotifCard(
-                      title: 'Panen Mendekati 🌾',
-                      desc:
-                          'Sawah Blok B - Tempuran mendekati usia panen (75 HST). Persiapkan logistik sekitar 15 hari lagi.',
-                      time: '1 hari lalu',
-                      color: Colors.blue,
-                    ),
-                  ],
+                  children: cards,
                 ),
               ),
             ],
@@ -940,8 +1007,7 @@ class HomeTab extends ConsumerWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const SettingsScreen()),
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
                     );
                   },
                 ),
@@ -952,8 +1018,7 @@ class HomeTab extends ConsumerWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const HelpFaqScreen()),
+                      MaterialPageRoute(builder: (_) => const HelpFaqScreen()),
                     );
                   },
                 ),
@@ -1002,7 +1067,9 @@ class HomeTab extends ConsumerWidget {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: color == AppColors.error ? AppColors.error : AppColors.textPrimary,
+          color: color == AppColors.error
+              ? AppColors.error
+              : AppColors.textPrimary,
           fontFamily: 'Poppins',
         ),
       ),
@@ -1322,7 +1389,8 @@ class _QuickAction extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+                border:
+                    Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: 0.15),
@@ -1404,7 +1472,8 @@ class _SawahMiniCard extends StatelessWidget {
               children: [
                 const Text('🌾', style: TextStyle(fontSize: 20)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: healthColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -1465,7 +1534,8 @@ class _SawahMiniCard extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: daysLeft <= 14 ? AppColors.accent : AppColors.primary,
+                      color:
+                          daysLeft <= 14 ? AppColors.accent : AppColors.primary,
                       fontFamily: 'Inter'),
                 ),
               ],
