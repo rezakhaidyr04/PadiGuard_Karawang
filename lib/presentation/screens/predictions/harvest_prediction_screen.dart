@@ -13,7 +13,9 @@ class HarvestPredictionScreen extends ConsumerWidget {
     final selectedId = ref.watch(selectedSawahIdProvider);
 
     final sawah = sawahList.firstWhere(
-      (s) => s.id == (selectedId ?? (sawahList.isNotEmpty ? sawahList.first.id : '')),
+      (s) =>
+          s.id ==
+          (selectedId ?? (sawahList.isNotEmpty ? sawahList.first.id : '')),
       orElse: () => sawahList.isNotEmpty ? sawahList.first : SawahModel.empty(),
     );
 
@@ -39,7 +41,7 @@ class HarvestPredictionScreen extends ConsumerWidget {
 
     final age = sawah.umurTanamanHari;
     final riskPct = sawah.skorRisiko;
-    final healthScore = 100 - riskPct;
+    final healthScore = (100 - riskPct).clamp(0, 100);
     final area = sawah.luasHektar;
     final expectedYield = area * 6.2 * ((100 - riskPct) / 100);
     final daysToHarvest = (115 - age).clamp(0, 115);
@@ -57,7 +59,8 @@ class HarvestPredictionScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         title: const Text('Analisis Panen AI 🌾',
-            style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+            style:
+                TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -189,7 +192,11 @@ class HarvestPredictionScreen extends ConsumerWidget {
                     value: healthScore,
                     color: healthColor,
                     suffix: '%',
-                    sublabel: healthScore >= 80 ? 'Sehat' : healthScore >= 50 ? 'Perlu Perhatian' : 'Kritis',
+                    sublabel: healthScore >= 80
+                        ? 'Sehat'
+                        : healthScore >= 50
+                            ? 'Perlu Perhatian'
+                            : 'Kritis',
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -197,9 +204,17 @@ class HarvestPredictionScreen extends ConsumerWidget {
                   child: _CircularScoreCard(
                     label: 'RISIKO GAGAL',
                     value: riskPct,
-                    color: riskPct >= 60 ? AppColors.error : riskPct >= 30 ? AppColors.warning : AppColors.success,
+                    color: riskPct >= 60
+                        ? AppColors.error
+                        : riskPct >= 30
+                            ? AppColors.warning
+                            : AppColors.success,
                     suffix: '%',
-                    sublabel: riskPct >= 60 ? 'TINGGI' : riskPct >= 30 ? 'SEDANG' : 'RENDAH',
+                    sublabel: riskPct >= 60
+                        ? 'TINGGI'
+                        : riskPct >= 30
+                            ? 'SEDANG'
+                            : 'RENDAH',
                   ),
                 ),
               ],
@@ -281,24 +296,24 @@ class HarvestPredictionScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _factorRow('💧 Kelembaban Tanah',
+          _factorRow(
+              '💧 Kelembaban Tanah',
               '${sawah.kelembaban.toStringAsFixed(0)}%',
-              moistureOk ? 'Optimal' : 'Kurang Ideal', moistureOk),
+              moistureOk ? 'Optimal' : 'Kurang Ideal',
+              moistureOk),
           _divider(),
-          _factorRow('🧪 pH Keasaman Tanah',
-              sawah.ph.toStringAsFixed(1),
+          _factorRow('🧪 pH Keasaman Tanah', sawah.ph.toStringAsFixed(1),
               phOk ? 'Baik' : 'Butuh Amandemen', phOk),
           _divider(),
-          _factorRow('🌊 Ketersediaan Air',
-              sawah.ketersediaanAir,
+          _factorRow('🌊 Ketersediaan Air', sawah.ketersediaanAir,
               waterOk ? 'Optimal' : 'Rawan Kekeringan', waterOk),
         ],
       ),
     );
   }
 
-  static Widget _divider() =>
-      const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider);
+  static Widget _divider() => const Divider(
+      height: 1, indent: 16, endIndent: 16, color: AppColors.divider);
 
   static Widget _factorRow(
       String name, String value, String status, bool isGood) {
@@ -331,8 +346,7 @@ class HarvestPredictionScreen extends ConsumerWidget {
                     Text(status,
                         style: TextStyle(
                             fontSize: 11,
-                            color:
-                                isGood ? AppColors.success : AppColors.error,
+                            color: isGood ? AppColors.success : AppColors.error,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Inter')),
                   ],
@@ -364,14 +378,16 @@ class HarvestPredictionScreen extends ConsumerWidget {
     if (sawah.kelembaban < 50 || sawah.ketersediaanAir == 'Kurang') {
       items.add({
         'title': '💧 Lakukan Irigasi Tambahan',
-        'desc': 'Kelembaban ${sawah.kelembaban.toStringAsFixed(0)}% rendah. Suplai air tambahan.',
+        'desc':
+            'Kelembaban ${sawah.kelembaban.toStringAsFixed(0)}% rendah. Suplai air tambahan.',
         'color': Colors.blue.shade600,
       });
     }
     if (riskPct >= 30) {
       items.add({
         'title': '🪲 Intensifkan Pemantauan Hama',
-        'desc': 'Risiko gagal panen $riskPct%. Lakukan penyemprotan preventif insektisida.',
+        'desc':
+            'Risiko gagal panen $riskPct%. Lakukan penyemprotan preventif insektisida.',
         'color': AppColors.error,
       });
     }

@@ -69,7 +69,7 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
     }
   }
 
-  void _sendMessage([String? preset]) {
+  Future<void> _sendMessage([String? preset]) async {
     final text = preset ?? _controller.text.trim();
     if (text.isEmpty) return;
     if (preset == null) _controller.clear();
@@ -77,37 +77,38 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
     ref.read(chatbotStateProvider.notifier).addMessage(text, true);
     setState(() {
       _isTyping = true;
-      _aiStatusText = 'Memproses dengan Ollama lokal...';
+      _aiStatusText = 'Memproses...';
     });
     _scrollToBottom();
 
     final host = ref.read(ollamaHostProvider);
     final model = ref.read(ollamaModelProvider);
 
-    // If Ollama takes too long/fails, show offline status. Since notifier
-    // doesn't expose which path succeeded, we approximate with a timer.
-    _aiStatusTimer?.cancel();
-    _aiStatusTimer = Timer(const Duration(milliseconds: 2000), () {
-      if (!mounted) return;
-      setState(() {
-        _aiStatusText = 'Mode offline: panduan berbasis aturan';
-      });
-    });
+    // Ask notifier which backend produced the response.
+    final backend = await ref
+        .read(chatbotStateProvider.notifier)
+        .generateBotResponseWithBackend(
+          text,
+          ollamaHost: host,
+          ollamaModel: model,
+        );
 
-    Future.delayed(const Duration(milliseconds: 1400), () {
-      if (!mounted) return;
-      ref.read(chatbotStateProvider.notifier).generateBotResponse(
-            text,
-            ollamaHost: host,
-            ollamaModel: model,
-          );
-      _aiStatusTimer?.cancel();
+    if (!mounted) return;
+    setState(() {
+      _isTyping = false;
+      _aiStatusText = backend == 'ollama'
+          ? 'Respon dari Ollama lokal ✅'
+          : 'Mode offline: panduan berbasis aturan ℹ️';
+    });
+    _scrollToBottom();
+
+    // Hide status text after a short moment.
+    _aiStatusTimer?.cancel();
+    _aiStatusTimer = Timer(const Duration(milliseconds: 1200), () {
       if (!mounted) return;
       setState(() {
-        _isTyping = false;
         _aiStatusText = null;
       });
-      _scrollToBottom();
     });
   }
 

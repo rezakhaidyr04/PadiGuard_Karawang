@@ -252,6 +252,45 @@ class ChatbotNotifier extends StateNotifier<List<Map<String, dynamic>>> {
     _loadFromPrefs();
   }
 
+  /// Emits info about which backend produced the next assistant message.
+  /// Possible values:
+  /// - 'ollama'
+  /// - 'offline'
+  /// - 'error'
+  /// Returns which backend produced the assistant message.
+  /// - 'ollama' when Ollama succeeded
+  /// - 'offline' when we used the rule-based fallback
+  Future<String> generateBotResponseWithBackend(
+    String query, {
+    required String ollamaHost,
+    required String ollamaModel,
+  }) async {
+    try {
+      final ollama = LocalOllamaChatService();
+      final responseText = await ollama.generate(
+        baseUrl: ollamaHost,
+        model: ollamaModel,
+        query: query,
+        contextText: null,
+      );
+
+      if (responseText.trim().isNotEmpty) {
+        addMessage(responseText.trim(), false);
+        return 'ollama';
+      }
+    } catch (_) {
+      // fall through
+    }
+
+    // Ollama failed => fallback
+    await generateBotResponse(
+      query,
+      ollamaHost: ollamaHost,
+      ollamaModel: ollamaModel,
+    );
+    return 'offline';
+  }
+
   static const _prefsKey = 'chatbot_messages_v1';
 
   static List<Map<String, dynamic>> _initialMessages() {
@@ -430,9 +469,12 @@ class ChatbotNotifier extends StateNotifier<List<Map<String, dynamic>>> {
 }
 
 // Ollama Host/Model Provider (replaces Gemini API key)
+// Default Ollama host.
+// NOTE: Anda pakai Qwen2.5 (bukan Ollama lokal murni), jadi ubah host ini
+// ke API endpoint yang benar untuk backend Anda.
 final ollamaHostProvider =
     StateProvider<String>((ref) => 'http://127.0.0.1:11434');
-final ollamaModelProvider = StateProvider<String>((ref) => 'llama3');
+final ollamaModelProvider = StateProvider<String>((ref) => 'qwen2.5:latest');
 
 final chatbotStateProvider =
     StateNotifierProvider<ChatbotNotifier, List<Map<String, dynamic>>>((ref) {
