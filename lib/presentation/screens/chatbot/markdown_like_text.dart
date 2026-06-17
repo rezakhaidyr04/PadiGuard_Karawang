@@ -28,7 +28,7 @@ class MarkdownLikeText extends StatelessWidget {
             const SizedBox(height: 10)
           else if (_isOrderedBullet(line))
             _buildBulletRow(
-              marker: _orderedIndex(line).toString() + '.',
+              marker: '${_orderedIndex(line)}.',
               content: _stripOrderedMarker(line),
             )
           else if (_isUnorderedBullet(line))

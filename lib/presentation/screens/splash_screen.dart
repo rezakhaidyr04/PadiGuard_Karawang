@@ -228,9 +228,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           position: _slideUp,
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 AppConstants.appName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
@@ -372,7 +372,8 @@ class _RiceWavePainter extends CustomPainter {
 
     for (double x = 0; x <= size.width; x++) {
       final y = size.height * heightRatio +
-          amplitude * math.sin((x / size.width * 2 * math.pi) + (offset * 2 * math.pi));
+          amplitude *
+              math.sin((x / size.width * 2 * math.pi) + (offset * 2 * math.pi));
       path.lineTo(x, y);
     }
 

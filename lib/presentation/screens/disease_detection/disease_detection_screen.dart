@@ -15,8 +15,8 @@ class DiseaseDetectionScreen extends ConsumerStatefulWidget {
       _DiseaseDetectionScreenState();
 }
 
-class _DiseaseDetectionScreenState
-    extends ConsumerState<DiseaseDetectionScreen> with TickerProviderStateMixin {
+class _DiseaseDetectionScreenState extends ConsumerState<DiseaseDetectionScreen>
+    with TickerProviderStateMixin {
   bool _isAnalyzing = false;
   String _analysisStep = '';
   double _analysisProgress = 0.0;
@@ -121,7 +121,8 @@ class _DiseaseDetectionScreenState
     int totalScans = scanHistory.length;
     int highRisk = scanHistory.where((h) => h.tingkatRisiko == 'TINGGI').length;
     int medRisk = scanHistory.where((h) => h.tingkatRisiko == 'SEDANG').length;
-    int healthy = scanHistory.where((h) => h.namaHama.contains('Healthy')).length;
+    int healthy =
+        scanHistory.where((h) => h.namaHama.contains('Healthy')).length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -135,11 +136,11 @@ class _DiseaseDetectionScreenState
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: Row(
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Deteksi Hama AI 🔬',
                             style: TextStyle(
                               fontSize: 22,
@@ -148,8 +149,8 @@ class _DiseaseDetectionScreenState
                               fontFamily: 'Poppins',
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          const Text(
+                          SizedBox(height: 2),
+                          Text(
                             'Ambil foto daun untuk diagnosa instan',
                             style: TextStyle(
                               fontSize: 13,
@@ -232,7 +233,8 @@ class _DiseaseDetectionScreenState
                         _StatBadge(
                             '$highRisk', 'Risiko Tinggi', AppColors.error),
                         const SizedBox(width: 8),
-                        _StatBadge('$medRisk', 'Risiko Sedang', AppColors.warning),
+                        _StatBadge(
+                            '$medRisk', 'Risiko Sedang', AppColors.warning),
                         const SizedBox(width: 8),
                         _StatBadge('$healthy', 'Sehat', AppColors.success),
                       ],
@@ -243,10 +245,10 @@ class _DiseaseDetectionScreenState
             ),
 
             // ─── Scan History ─────────────────────────────────────────────
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 0, 6),
-                child: const Text('Riwayat Scan Penyakit',
+                padding: EdgeInsets.fromLTRB(20, 20, 0, 6),
+                child: Text('Riwayat Scan Penyakit',
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -419,9 +421,9 @@ class _DiseaseDetectionScreenState
                       color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 6),
-                Text(
+                const Text(
                   'Foto daun padi untuk mendapatkan\ndiagnosa dan rekomendasi AI secara instan.',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                       height: 1.4,
@@ -438,8 +440,8 @@ class _DiseaseDetectionScreenState
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () =>
-                      _pickImage(ImageSource.camera, sawahList, selectedSawahId),
+                  onPressed: () => _pickImage(
+                      ImageSource.camera, sawahList, selectedSawahId),
                   icon: const Text('📷', style: TextStyle(fontSize: 18)),
                   label: const Text('Kamera',
                       style: TextStyle(
@@ -835,8 +837,7 @@ class _DiseaseDetectionScreenState
     );
   }
 
-  static Widget _sectionCard(
-      {required String title, required Widget child}) {
+  static Widget _sectionCard({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -902,8 +903,7 @@ class _SawahSelector extends StatelessWidget {
                         fontFamily: 'Inter')),
                 if (sawahList.isEmpty)
                   const Text('Belum ada sawah terdaftar',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.textHint))
+                      style: TextStyle(fontSize: 12, color: AppColors.textHint))
                 else
                   DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -1048,8 +1048,8 @@ class _HistoryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
-                    child: Text(riskEmoji,
-                        style: const TextStyle(fontSize: 26)),
+                    child:
+                        Text(riskEmoji, style: const TextStyle(fontSize: 26)),
                   ),
                 ),
                 const SizedBox(width: 12),

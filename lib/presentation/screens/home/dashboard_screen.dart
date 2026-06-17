@@ -798,7 +798,7 @@ class HomeTab extends ConsumerWidget {
 
       cards.add(
         _NotifCard(
-          title: 'Perlu Perhatian: Kondisi Sawah ${riskText} 🚨',
+          title: 'Perlu Perhatian: Kondisi Sawah $riskText 🚨',
           desc:
               '${s.nama} memiliki status ${s.statusKesehatan} dengan skor risiko ${s.skorRisiko}/100. Pertimbangkan pemeriksaan lanjutan dan penyesuaian manajemen air/pemupukan.',
           time: _timeAgo(s.updatedAt),
@@ -809,7 +809,7 @@ class HomeTab extends ConsumerWidget {
 
     if (cards.isEmpty) {
       cards.add(
-        _NotifCard(
+        const _NotifCard(
           title: 'Semua Sistem Aman ✅',
           desc:
               'Tidak ada peringatan kritis dari data sawah atau hasil scan hama saat ini.',
@@ -1073,7 +1073,7 @@ class HomeTab extends ConsumerWidget {
           fontFamily: 'Poppins',
         ),
       ),
-      trailing: Icon(Icons.chevron_right_rounded,
+      trailing: const Icon(Icons.chevron_right_rounded,
           color: AppColors.textHint, size: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );

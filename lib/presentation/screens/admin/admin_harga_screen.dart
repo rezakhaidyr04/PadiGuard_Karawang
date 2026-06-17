@@ -124,7 +124,8 @@ class _AdminHargaScreenState extends ConsumerState<AdminHargaScreen> {
                     // Add Button
                     ElevatedButton.icon(
                       onPressed: () => _showAddEditDialog(context, ref, null),
-                      icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                      icon: const Icon(Icons.add_rounded,
+                          size: 16, color: Colors.white),
                       label: const Text(
                         'Tambah',
                         style: TextStyle(
@@ -184,12 +185,9 @@ class _AdminHargaScreenState extends ConsumerState<AdminHargaScreen> {
   static void _showAddEditDialog(
       BuildContext context, WidgetRef ref, AdminHargaData? existing) {
     final isEdit = existing != null;
-    final namaCtrl =
-        TextEditingController(text: existing?.namaKomoditas ?? '');
+    final namaCtrl = TextEditingController(text: existing?.namaKomoditas ?? '');
     final hargaCtrl = TextEditingController(
-        text: existing != null
-            ? existing.hargaSaatIni.toStringAsFixed(0)
-            : '');
+        text: existing != null ? existing.hargaSaatIni.toStringAsFixed(0) : '');
     final hargaSebelumCtrl = TextEditingController(
         text: existing != null
             ? existing.hargaSebelumnya.toStringAsFixed(0)
@@ -330,7 +328,8 @@ class _AdminHargaScreenState extends ConsumerState<AdminHargaScreen> {
               ),
               child: Text(
                 isEdit ? 'Simpan' : 'Tambah',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -541,7 +540,8 @@ class _HargaCard extends ConsumerWidget {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Hapus Harga?',
-            style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+            style:
+                TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
         content: Text(
           'Hapus data harga "${harga.namaKomoditas}"?',
           style: const TextStyle(fontFamily: 'Inter'),
@@ -561,8 +561,9 @@ class _HargaCard extends ConsumerWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            child:
-                const Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Hapus',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -665,7 +666,7 @@ class _EmptyState extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.surfaceGreen,
                 shape: BoxShape.circle,
               ),
