@@ -1,0 +1,15 @@
+name: Local Qwen
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Qwen 2.5 3B
+    provider: ollama
+    model: qwen2.5:3b
+    apiBase: http://localhost:11434
+
+tabAutocompleteModel:
+  name: Qwen 2.5 3B
+  provider: ollama
+  model: qwen2.5:3b
+  apiBase: http://localhost:11434
