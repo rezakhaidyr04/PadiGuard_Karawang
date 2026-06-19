@@ -1,21 +1,33 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
-class EditProfileScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/user_provider.dart';
+
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _namaController = TextEditingController(text: 'Petani Karawang');
-  final _emailController = TextEditingController(text: 'petani@karawang.com');
-  final _teleponController = TextEditingController(text: '081234567890');
-  final _alamatController =
-      TextEditingController(text: 'Kec. Telukjambe Timur, Karawang');
+  late final TextEditingController _namaController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _teleponController;
+  late final TextEditingController _alamatController;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = ref.read(currentUserProvider);
+    _namaController = TextEditingController(text: user?.name ?? 'Pengguna');
+    _emailController = TextEditingController(text: user?.email ?? 'email@kosong.com');
+    _teleponController = TextEditingController(text: user?.phoneNumber ?? '-');
+    _alamatController = TextEditingController(text: user?.district ?? '-');
+  }
 
   @override
   void dispose() {

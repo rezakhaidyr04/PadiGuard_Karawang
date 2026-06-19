@@ -11,11 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Firebase (Cloud-compatible)
-  firebase_core: ^4.10.0
-  firebase_auth: ^6.5.2
-  cloud_firestore: ^6.5.0
-  cloud_functions: ^6.3.2
+  # Backend API
+  http: ^1.2.0
 
   # State Management
   flutter_riverpod: ^2.4.0

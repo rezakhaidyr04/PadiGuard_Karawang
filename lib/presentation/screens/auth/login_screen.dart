@@ -4,15 +4,20 @@ import '../../../core/constants/app_constants.dart';
 import '../home/dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 import 'register_screen.dart';
+import '../../../data/services/api_service.dart';
+import '../../../data/models/user_model.dart';
+import '../../providers/user_provider.dart';
 
-class LoginScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -57,10 +62,35 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = false);
 
     final email = _emailController.text.trim().toLowerCase();
+    final password = _passwordController.text;
+
     if (email == _adminEmail) {
       _goToAdminDashboard();
-    } else {
+      return;
+    }
+
+    final apiService = ApiService();
+    final response = await apiService.login(email, password);
+
+    if (response['status'] == 'success') {
+      final userData = response['data'];
+      final userModel = UserModel(
+        uid: userData['id'].toString(),
+        name: userData['name'],
+        email: userData['email'],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      ref.read(currentUserProvider.notifier).setUser(userModel);
       _goToDashboard();
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Login gagal'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 

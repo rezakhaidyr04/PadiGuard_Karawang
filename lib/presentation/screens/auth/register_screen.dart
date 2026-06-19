@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import 'login_screen.dart';
+import '../../../data/services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -58,8 +59,24 @@ class _RegisterScreenState extends State<RegisterScreen>
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Show success dialog then navigate to login
-    _showSuccessDialog();
+    final nama = _namaController.text.trim();
+    final email = _emailController.text.trim().toLowerCase();
+    final password = _passwordController.text;
+
+    final apiService = ApiService();
+    final response = await apiService.register(nama, email, password);
+
+    if (response['status'] == 'success') {
+      _showSuccessDialog();
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Pendaftaran gagal'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   void _showSuccessDialog() {

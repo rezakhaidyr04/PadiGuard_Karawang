@@ -42,7 +42,6 @@ class DefaultFirebaseOptions {
   );
   */
 }
-
 /// INSTRUKSI SETUP FIREBASE:
 /// 
 /// 1. Buat project di: https://console.firebase.google.com
@@ -57,3 +56,4 @@ class DefaultFirebaseOptions {
 ///    - google-services.json
 ///    - GoogleService-Info.plist
 ///    - lib/core/config/firebase_options.dart (yang berisi API key asli)
+

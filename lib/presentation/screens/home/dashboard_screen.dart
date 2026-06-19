@@ -8,6 +8,7 @@ import '../field_management/sawah_screen.dart';
 import '../predictions/harvest_prediction_screen.dart';
 import '../../../data/models/sawah_model.dart';
 import '../../providers/app_state_providers.dart';
+import '../../providers/user_provider.dart';
 import '../auth/login_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../profile/settings_screen.dart';
@@ -302,7 +303,7 @@ class HomeTab extends ConsumerWidget {
                   const SizedBox(width: 8),
                   _buildIconBtn(
                     Icons.person_outline_rounded,
-                    onTap: () => _showProfileSheet(context),
+                    onTap: () => _showProfileSheet(context, ref),
                   ),
                 ],
               ),
@@ -893,7 +894,9 @@ class HomeTab extends ConsumerWidget {
   }
 
   // ─── Profile Sheet with Logout ─────────────────────────────────────────────
-  static void _showProfileSheet(BuildContext context) {
+  static void _showProfileSheet(BuildContext context, WidgetRef ref) {
+    final user = ref.read(currentUserProvider);
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -939,9 +942,9 @@ class HomeTab extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Petani Karawang',
-                  style: TextStyle(
+                Text(
+                  user?.name ?? 'Pengguna',
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Poppins',
@@ -949,9 +952,9 @@ class HomeTab extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'petani@karawang.com',
-                  style: TextStyle(
+                Text(
+                  user?.email ?? 'email@kosong.com',
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                     fontFamily: 'Inter',
