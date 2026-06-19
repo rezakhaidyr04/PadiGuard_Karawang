@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models/sawah_model.dart';
 import '../../data/models/hama_model.dart';
+import '../../data/models/panen_catatan_model.dart';
 import '../../core/services/local_ollama_chat_service.dart';
 
 // -----------------------------------------------------------------------------
@@ -113,109 +114,155 @@ final selectedSawahIdProvider = StateProvider<String?>((ref) => null);
 // -----------------------------------------------------------------------------
 
 class HamaNotifier extends StateNotifier<List<HamaModel>> {
-  HamaNotifier() : super(_initialHama());
-
-  static List<HamaModel> _initialHama() {
-    final now = DateTime.now();
-    return [
-      HamaModel(
-        id: 'hama-1',
-        sawahId: 'sawah-2',
-        userId: 'user-001',
-        pathFoto: 'demo_wereng.jpg',
-        urlFoto: '',
-        namaHama: 'Wereng Cokelat',
-        confidence: 0.92,
-        tingkatRisiko: 'TINGGI',
-        deskripsi:
-            'Serangga wereng cokelat menyerap cairan tanaman padi dari batang, menyebabkan daun mengering (hopperburn).',
-        solusi: [
-          'Kurangi kelembaban dengan metode irigasi berselang (intermittent).',
-          'Gunakan insektisida sistemik berbahan aktif Pimetrozin atau Imidakloprid.',
-          'Bersihkan gulma di sekeliling tanaman padi.',
-        ],
-        pestsidaRekomendasi: 'Pimetrozin 50% WG',
-        dosasiPestisida: '250 g/ha',
-        unitDosis: 'gram',
-        waktuAplikasi: 'Pagi hari sebelum jam 09.00',
-        detectedAt: now.subtract(const Duration(hours: 3)),
-        resolved: false,
-        createdAt: now.subtract(const Duration(hours: 3)),
-        updatedAt: now.subtract(const Duration(hours: 3)),
-      ),
-      HamaModel(
-        id: 'hama-2',
-        sawahId: 'sawah-3',
-        userId: 'user-001',
-        pathFoto: 'demo_blast.jpg',
-        urlFoto: '',
-        namaHama: 'Blast Fungus (Pyricularia oryzae)',
-        confidence: 0.87,
-        tingkatRisiko: 'TINGGI',
-        deskripsi:
-            'Penyakit jamur yang menyerang daun padi menimbulkan bercak belah ketupat, dan mematahkan leher malai padi (patah leher).',
-        solusi: [
-          'Kurangi pemakaian pupuk Nitrogen (Urea) berlebih.',
-          'Aplikasikan fungisida sistemik berbahan aktif Trisiklazol atau Difenokonazol.',
-          'Renggangkan jarak tanam (sistem Jajar Legowo).',
-        ],
-        pestsidaRekomendasi: 'Trisiklazol 75% WP',
-        dosasiPestisida: '400 g/ha',
-        unitDosis: 'gram',
-        waktuAplikasi: 'Sore hari setelah jam 15.00',
-        detectedAt: now.subtract(const Duration(days: 1)),
-        resolved: false,
-        createdAt: now.subtract(const Duration(days: 1)),
-        updatedAt: now.subtract(const Duration(days: 1)),
-      ),
-      HamaModel(
-        id: 'hama-3',
-        sawahId: 'sawah-1',
-        userId: 'user-001',
-        pathFoto: 'demo_healthy.jpg',
-        urlFoto: '',
-        namaHama: 'Healthy (Sehat)',
-        confidence: 0.96,
-        tingkatRisiko: 'RENDAH',
-        deskripsi:
-            'Daun padi tampak hijau segar bebas bercak. Tidak terdeteksi adanya gejala serangan hama maupun penyakit jamur.',
-        solusi: [
-          'Pertahankan sistem irigasi berselang.',
-          'Pantau berkala seminggu dua kali.',
-        ],
-        pestsidaRekomendasi: 'N/A',
-        dosasiPestisida: '0',
-        unitDosis: 'N/A',
-        waktuAplikasi: 'N/A',
-        detectedAt: now.subtract(const Duration(days: 3)),
-        resolved: true,
-        createdAt: now.subtract(const Duration(days: 3)),
-        updatedAt: now.subtract(const Duration(days: 3)),
-      ),
-    ];
+  HamaNotifier() : super([]) {
+    fetchHama();
   }
 
-  void addScan(HamaModel scan) {
+  Future<void> fetchHama() async {
+    final api = ApiService();
+    final res = await api.getHama();
+    if (res['status'] == 'success') {
+      final List data = res['data'] ?? [];
+      state = data.map((json) {
+        final solusiRaw = json['solusi'];
+        List<String> solusiList = [];
+        if (solusiRaw is List) {
+          solusiList = solusiRaw.map((e) => e.toString()).toList();
+        }
+        final now = DateTime.now();
+        return HamaModel(
+          id: json['id'].toString(),
+          sawahId: json['sawah_id'].toString(),
+          userId: json['user_id'].toString(),
+          pathFoto: json['path_foto'] ?? '',
+          urlFoto: json['url_foto'] ?? '',
+          namaHama: json['nama_hama'] ?? 'Tidak Diketahui',
+          confidence: double.tryParse(json['confidence'].toString()) ?? 0.0,
+          tingkatRisiko: json['tingkat_risiko'] ?? 'RENDAH',
+          deskripsi: json['deskripsi'] ?? '',
+          solusi: solusiList,
+          pestsidaRekomendasi: json['pestsida_rekomendasi'] ?? 'N/A',
+          dosasiPestisida: json['dosasi_pestisida'] ?? '0',
+          unitDosis: json['unit_dosis'] ?? 'N/A',
+          waktuAplikasi: json['waktu_aplikasi'] ?? 'N/A',
+          detectedAt: DateTime.tryParse(json['detected_at'] ?? '') ?? now,
+          resolved: (json['resolved'] == 1 || json['resolved'] == true),
+          resolvedAt: json['resolved_at'] != null
+              ? DateTime.tryParse(json['resolved_at'])
+              : null,
+          createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? now,
+          updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? now,
+        );
+      }).toList();
+    }
+  }
+
+  Future<void> addScan(HamaModel scan) async {
+    // Optimistic update
     state = [scan, ...state];
+    final api = ApiService();
+    await api.addHama({
+      'sawah_id': scan.sawahId,
+      'nama_hama': scan.namaHama,
+      'confidence': scan.confidence,
+      'tingkat_risiko': scan.tingkatRisiko,
+      'deskripsi': scan.deskripsi,
+      'solusi': scan.solusi,
+      'pestsida_rekomendasi': scan.pestsidaRekomendasi,
+      'dosasi_pestisida': scan.dosasiPestisida,
+      'unit_dosis': scan.unitDosis,
+      'waktu_aplikasi': scan.waktuAplikasi,
+      'path_foto': scan.pathFoto,
+      'url_foto': scan.urlFoto,
+    });
+    // Refresh dari server supaya ID akurat
+    await fetchHama();
   }
 
-  void toggleResolveStatus(String hamaId) {
+  Future<void> toggleResolveStatus(String hamaId) async {
+    final existing = state.firstWhere((h) => h.id == hamaId,
+        orElse: () => state.first);
+    final newResolved = !existing.resolved;
+    // Optimistic update
     state = [
       for (final h in state)
         if (h.id == hamaId)
           h.copyWith(
-            resolved: !h.resolved,
-            resolvedAt: !h.resolved ? DateTime.now() : null,
+            resolved: newResolved,
+            resolvedAt: newResolved ? DateTime.now() : null,
           )
         else
           h
     ];
+    final api = ApiService();
+    await api.updateHamaResolved(hamaId, newResolved);
   }
 }
 
 final hamaStateProvider =
     StateNotifierProvider<HamaNotifier, List<HamaModel>>((ref) {
   return HamaNotifier();
+});
+
+// -----------------------------------------------------------------------------
+// PANEN CATATAN STATE (catatan hasil panen aktual)
+// -----------------------------------------------------------------------------
+
+class PanenCatatanNotifier extends StateNotifier<List<PanenCatatanModel>> {
+  PanenCatatanNotifier() : super([]) {
+    fetchPanen();
+  }
+
+  Future<void> fetchPanen() async {
+    final api = ApiService();
+    final res = await api.getPanen();
+    if (res['status'] == 'success') {
+      final List data = res['data'] ?? [];
+      state = data
+          .map((json) => PanenCatatanModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    }
+  }
+
+  Future<bool> addPanen(PanenCatatanModel panen) async {
+    final api = ApiService();
+    final res = await api.addPanen(panen.toJson());
+    if (res['status'] == 'success') {
+      await fetchPanen();
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deletePanen(String id) async {
+    final api = ApiService();
+    final res = await api.deletePanen(id);
+    if (res['status'] == 'success') {
+      state = state.where((p) => p.id != id).toList();
+      return true;
+    }
+    return false;
+  }
+
+  /// Total hasil panen semua sawah dalam kg
+  double get totalHasilKg =>
+      state.fold(0.0, (sum, p) => sum + p.hasilPanenKg);
+
+  /// Total nilai panen dalam rupiah
+  int get totalNilai =>
+      state.fold(0, (sum, p) => sum + p.totalNilaiPanen);
+
+  /// Rata-rata hasil per hektar
+  double get rataRataPerHa {
+    if (state.isEmpty) return 0.0;
+    final total = state.fold(0.0, (sum, p) => sum + p.hasilPerHektar);
+    return total / state.length;
+  }
+}
+
+final panenCatatanProvider =
+    StateNotifierProvider<PanenCatatanNotifier, List<PanenCatatanModel>>((ref) {
+  return PanenCatatanNotifier();
 });
 
 // -----------------------------------------------------------------------------

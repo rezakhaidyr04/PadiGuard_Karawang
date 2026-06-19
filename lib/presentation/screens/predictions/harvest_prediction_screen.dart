@@ -2,13 +2,176 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/sawah_model.dart';
+import '../../../data/models/panen_catatan_model.dart';
 import '../../providers/app_state_providers.dart';
 
-class HarvestPredictionScreen extends ConsumerWidget {
+class HarvestPredictionScreen extends ConsumerStatefulWidget {
   const HarvestPredictionScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HarvestPredictionScreen> createState() =>
+      _HarvestPredictionScreenState();
+}
+
+class _HarvestPredictionScreenState
+    extends ConsumerState<HarvestPredictionScreen> {
+
+  // ── Catat Panen dialog ──────────────────────────────────────────────────
+  void _showCatatPanenDialog(SawahModel sawah) {
+    final hasilCtrl = TextEditingController();
+    final hargaCtrl = TextEditingController(text: '6500');
+    final catatanCtrl = TextEditingController();
+    String kualitas = 'GKP';
+    String metode = 'manual';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('📦 Catat Hasil Panen',
+              style: TextStyle(
+                  fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Sawah: ${sawah.nama}',
+                    style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Inter')),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: hasilCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Hasil Panen (kg) *',
+                    prefixIcon: const Icon(Icons.scale),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: hargaCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Harga Jual/kg (Rp)',
+                    prefixIcon: const Icon(Icons.attach_money),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: kualitas,
+                  decoration: InputDecoration(
+                    labelText: 'Kualitas Gabah',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'GKP', child: Text('GKP - Kering Panen')),
+                    DropdownMenuItem(value: 'GKG', child: Text('GKG - Kering Giling')),
+                    DropdownMenuItem(value: 'Premium', child: Text('Premium')),
+                  ],
+                  onChanged: (v) => setDlg(() => kualitas = v ?? 'GKP'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: metode,
+                  decoration: InputDecoration(
+                    labelText: 'Metode Panen',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'manual', child: Text('Manual (Sabit)')),
+                    DropdownMenuItem(
+                        value: 'combine_harvester',
+                        child: Text('Combine Harvester')),
+                  ],
+                  onChanged: (v) => setDlg(() => metode = v ?? 'manual'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: catatanCtrl,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    labelText: 'Catatan (opsional)',
+                    prefixIcon: const Icon(Icons.note),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () async {
+                final kg = double.tryParse(hasilCtrl.text.trim());
+                if (kg == null || kg <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Hasil panen harus diisi!')),
+                  );
+                  return;
+                }
+                Navigator.pop(ctx);
+                final panen = PanenCatatanModel(
+                  id: '',
+                  sawahId: sawah.id,
+                  userId: '',
+                  tanggalPanen: DateTime.now(),
+                  hasilPanenKg: kg,
+                  hasilPerHektar: sawah.luasHektar > 0
+                      ? kg / sawah.luasHektar
+                      : kg,
+                  luasHektar: sawah.luasHektar,
+                  kualitasGabah: kualitas,
+                  kadarAir: 25.0,
+                  hargaJualPerKg:
+                      int.tryParse(hargaCtrl.text.trim()) ?? 6500,
+                  totalNilaiPanen: 0,
+                  catatan: catatanCtrl.text.trim(),
+                  metodePanen: metode,
+                  createdAt: DateTime.now(),
+                );
+                final ok = await ref
+                    .read(panenCatatanProvider.notifier)
+                    .addPanen(panen);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(ok
+                        ? '✅ Data panen berhasil disimpan!'
+                        : '❌ Gagal menyimpan. Coba lagi.'),
+                    backgroundColor: ok ? AppColors.success : AppColors.error,
+                  ));
+                }
+              },
+              child: const Text('Simpan Panen'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final sawahList = ref.watch(sawahStateProvider);
     final selectedId = ref.watch(selectedSawahIdProvider);
 
@@ -231,6 +394,36 @@ class HarvestPredictionScreen extends ConsumerWidget {
             _sectionTitle('Rekomendasi Tindakan AI'),
             const SizedBox(height: 10),
             _recommendationsCard(sawah, riskPct),
+            const SizedBox(height: 24),
+
+            // ── Catat Panen Section ──────────────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _sectionTitle('📦 Riwayat Panen'),
+                ElevatedButton.icon(
+                  onPressed: () => _showCatatPanenDialog(sawah),
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Catat Panen',
+                      style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _PanenHistoryList(sawahId: sawah.id),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -543,6 +736,179 @@ class _CircularScoreCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Panen History List ──────────────────────────────────────────────────────
+class _PanenHistoryList extends ConsumerWidget {
+  final String sawahId;
+  const _PanenHistoryList({required this.sawahId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final allPanen = ref.watch(panenCatatanProvider);
+    final filtered =
+        allPanen.where((p) => p.sawahId == sawahId).toList();
+
+    if (filtered.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: const Column(
+          children: [
+            Text('📭', style: TextStyle(fontSize: 36)),
+            SizedBox(height: 8),
+            Text(
+              'Belum ada catatan panen',
+              style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter',
+                  fontSize: 13),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Klik tombol "Catat Panen" untuk memulai',
+              style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter',
+                  fontSize: 11),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: filtered.map((p) {
+        final date =
+            '${p.tanggalPanen.day}/${p.tanggalPanen.month}/${p.tanggalPanen.year}';
+        final hasilPerHa = p.hasilPerHektar > 0
+            ? '${p.hasilPerHektar.toStringAsFixed(1)} kg/ha'
+            : '-';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3)),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('🌾', style: TextStyle(fontSize: 22)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${p.hasilPanenKg.toStringAsFixed(0)} kg',
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontFamily: 'Poppins'),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            p.kualitasGabah,
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.success,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Inter'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$date  •  $hasilPerHa  •  ${p.totalNilaiFormatted}',
+                      style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                          fontFamily: 'Inter'),
+                    ),
+                    if (p.catatan.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        p.catatan,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                            fontFamily: 'Inter',
+                            fontStyle: FontStyle.italic),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline,
+                    color: AppColors.error, size: 20),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (c) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      title: const Text('Hapus catatan panen?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(c, false),
+                            child: const Text('Batal')),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.error,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () => Navigator.pop(c, true),
+                          child: const Text('Hapus'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) {
+                    await ref
+                        .read(panenCatatanProvider.notifier)
+                        .deletePanen(p.id);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }
