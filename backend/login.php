@@ -10,6 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 require_once 'db.php';
 
+require_once 'jwt.php';
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($data['email']) || !isset($data['password'])) {
@@ -26,12 +28,19 @@ try {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
-        // Jangan kembalikan password
-        unset($user['password']);
+        unset($user['password']); // Jangan kembalikan password
+        
+        // Buat JWT Token
+        $payload = [
+            'id' => $user['id'],
+            'email' => $user['email']
+        ];
+        $token = generate_jwt($payload, $secret_key);
         
         echo json_encode([
             'status' => 'success',
             'message' => 'Login berhasil',
+            'token' => $token,
             'data' => $user
         ]);
     } else {

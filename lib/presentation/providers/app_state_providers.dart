@@ -12,86 +12,61 @@ import '../../core/services/local_ollama_chat_service.dart';
 // SAWAH / FIELD STATE
 // -----------------------------------------------------------------------------
 
-class SawahNotifier extends StateNotifier<List<SawahModel>> {
-  SawahNotifier() : super(_initialSawah());
+import '../../data/services/api_service.dart';
 
-  static List<SawahModel> _initialSawah() {
-    final now = DateTime.now();
-    return [
-      SawahModel(
-        id: 'sawah-1',
-        userId: 'user-001',
-        nama: 'Sawah Utama - Telukjambe',
-        latitude: -6.3245,
-        longitude: 107.3025,
-        luasHektar: 2.5,
-        jenisTanaman: 'Ciherang',
-        tanggalTanam: now.subtract(const Duration(days: 45)), // Fase Vegetatif
-        tanggalPanenExpected: now.add(const Duration(days: 75)),
-        umurTanamanHari: 45,
-        kelembaban: 78.0,
-        ph: 6.5,
-        temperatureCelsius: 29.5,
-        jenisAirTanah: 'Lempung Liat',
-        ketersediaanAir: 'Lancar',
-        status: 'growing', // Fase Vegetatif
-        statusKesehatan: 'Sehat',
-        skorRisiko: 12,
-        idLogHama: [],
-        createdAt: now.subtract(const Duration(days: 45)),
-        updatedAt: now,
-      ),
-      SawahModel(
-        id: 'sawah-2',
-        userId: 'user-001',
-        nama: 'Sawah Blok B - Tempuran',
-        latitude: -6.1824,
-        longitude: 107.4255,
-        luasHektar: 1.8,
-        jenisTanaman: 'Inpari 32',
-        tanggalTanam: now.subtract(const Duration(days: 75)), // Fase Generatif
-        tanggalPanenExpected: now.add(const Duration(days: 45)),
-        umurTanamanHari: 75,
-        kelembaban: 65.0,
-        ph: 6.1,
-        temperatureCelsius: 30.2,
-        jenisAirTanah: 'Lempung Berpasir',
-        ketersediaanAir: 'Kurang',
-        status: 'growing', // Fase Generatif
-        statusKesehatan: 'Risiko',
-        skorRisiko: 35,
-        idLogHama: ['hama-1'],
-        createdAt: now.subtract(const Duration(days: 75)),
-        updatedAt: now,
-      ),
-      SawahModel(
-        id: 'sawah-3',
-        userId: 'user-001',
-        nama: 'Sawah Rawa - Cilamaya',
-        latitude: -6.2155,
-        longitude: 107.5142,
-        luasHektar: 3.2,
-        jenisTanaman: 'IR64',
-        tanggalTanam: now.subtract(const Duration(days: 15)), // Fase Bibit
-        tanggalPanenExpected: now.add(const Duration(days: 105)),
-        umurTanamanHari: 15,
-        kelembaban: 88.0,
-        ph: 5.8,
-        temperatureCelsius: 28.0,
-        jenisAirTanah: 'Gambut',
-        ketersediaanAir: 'Melimpah',
-        status: 'planting', // Fase Bibit
-        statusKesehatan: 'Sakit',
-        skorRisiko: 62,
-        idLogHama: ['hama-2'],
-        createdAt: now.subtract(const Duration(days: 15)),
-        updatedAt: now,
-      ),
-    ];
+class SawahNotifier extends StateNotifier<List<SawahModel>> {
+  SawahNotifier() : super([]) {
+    fetchSawah();
   }
 
-  void addSawah(SawahModel sawah) {
+  Future<void> fetchSawah() async {
+    final api = ApiService();
+    final res = await api.getSawah();
+    if (res['status'] == 'success') {
+      final List data = res['data'] ?? [];
+      state = data.map((json) {
+        return SawahModel(
+          id: json['id'].toString(),
+          userId: json['user_id'].toString(),
+          nama: json['nama'],
+          latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
+          longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
+          luasHektar: double.tryParse(json['luas_hektar'].toString()) ?? 0.0,
+          jenisTanaman: json['jenis_tanaman'],
+          tanggalTanam: DateTime.tryParse(json['tanggal_tanam'] ?? '') ?? DateTime.now(),
+          tanggalPanenExpected: DateTime.tryParse(json['tanggal_panen_expected'] ?? '') ?? DateTime.now(),
+          umurTanamanHari: int.tryParse(json['umur_tanaman_hari'].toString()) ?? 0,
+          kelembaban: double.tryParse(json['kelembaban'].toString()) ?? 0.0,
+          ph: double.tryParse(json['ph'].toString()) ?? 7.0,
+          temperatureCelsius: double.tryParse(json['temperature_celsius'].toString()) ?? 25.0,
+          jenisAirTanah: json['jenis_air_tanah'],
+          ketersediaanAir: json['ketersediaan_air'],
+          status: json['status'],
+          statusKesehatan: json['status_kesehatan'],
+          skorRisiko: int.tryParse(json['skor_risiko'].toString()) ?? 0,
+          idLogHama: [],
+          createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
+          updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
+        );
+      }).toList();
+    }
+  }
+
+  Future<void> addSawah(SawahModel sawah) async {
     state = [...state, sawah];
+    
+    final api = ApiService();
+    await api.addSawah({
+      'nama': sawah.nama,
+      'luas_hektar': sawah.luasHektar,
+      'jenis_tanaman': sawah.jenisTanaman,
+      'latitude': sawah.latitude,
+      'longitude': sawah.longitude,
+      'tanggal_tanam': sawah.tanggalTanam.toIso8601String().split('T')[0],
+      'tanggal_panen_expected': sawah.tanggalPanenExpected.toIso8601String().split('T')[0],
+    });
+    
+    await fetchSawah();
   }
 
   void updateSawah(SawahModel updated) {

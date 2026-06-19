@@ -10,6 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 require_once 'db.php';
 
+require_once 'jwt.php';
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (!isset($data['name']) || !isset($data['email']) || !isset($data['password'])) {
@@ -24,12 +26,21 @@ $password = password_hash($data['password'], PASSWORD_BCRYPT);
 try {
     $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
     $stmt->execute([$name, $email, $password]);
+    $newUserId = $pdo->lastInsertId();
+    
+    // Buat JWT Token
+    $payload = [
+        'id' => $newUserId,
+        'email' => $email
+    ];
+    $token = generate_jwt($payload, $secret_key);
     
     echo json_encode([
         'status' => 'success', 
         'message' => 'Registrasi berhasil',
+        'token' => $token,
         'data' => [
-            'id' => $pdo->lastInsertId(),
+            'id' => $newUserId,
             'name' => $name,
             'email' => $email
         ]
