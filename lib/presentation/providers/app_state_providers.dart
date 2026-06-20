@@ -21,36 +21,58 @@ class SawahNotifier extends StateNotifier<List<SawahModel>> {
   }
 
   Future<void> fetchSawah() async {
-    final api = ApiService();
-    final res = await api.getSawah();
-    if (res['status'] == 'success') {
-      final List data = res['data'] ?? [];
-      state = data.map((json) {
-        return SawahModel(
-          id: json['id'].toString(),
-          userId: json['user_id'].toString(),
-          nama: json['nama'],
-          latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
-          longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
-          luasHektar: double.tryParse(json['luas_hektar'].toString()) ?? 0.0,
-          jenisTanaman: json['jenis_tanaman'],
-          tanggalTanam: DateTime.tryParse(json['tanggal_tanam'] ?? '') ?? DateTime.now(),
-          tanggalPanenExpected: DateTime.tryParse(json['tanggal_panen_expected'] ?? '') ?? DateTime.now(),
-          umurTanamanHari: int.tryParse(json['umur_tanaman_hari'].toString()) ?? 0,
-          kelembaban: double.tryParse(json['kelembaban'].toString()) ?? 0.0,
-          ph: double.tryParse(json['ph'].toString()) ?? 7.0,
-          temperatureCelsius: double.tryParse(json['temperature_celsius'].toString()) ?? 25.0,
-          jenisAirTanah: json['jenis_air_tanah'],
-          ketersediaanAir: json['ketersediaan_air'],
-          status: json['status'],
-          statusKesehatan: json['status_kesehatan'],
-          skorRisiko: int.tryParse(json['skor_risiko'].toString()) ?? 0,
-          idLogHama: [],
-          createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
-          updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
-        );
-      }).toList();
-    }
+    // Simulasi loading & mencegah error state modifikasi saat build
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Menggunakan Mock Data Sawah
+    state = [
+      SawahModel(
+        id: 'sawah_mock_1',
+        userId: 'user_mock_123',
+        nama: 'Sawah Telukjambe',
+        latitude: -6.321,
+        longitude: 107.294,
+        luasHektar: 1.5,
+        jenisTanaman: 'Padi Inpari 32',
+        tanggalTanam: DateTime.now().subtract(const Duration(days: 45)),
+        tanggalPanenExpected: DateTime.now().add(const Duration(days: 70)),
+        umurTanamanHari: 45,
+        kelembaban: 65.0,
+        ph: 6.5,
+        temperatureCelsius: 28.0,
+        jenisAirTanah: 'Irigasi',
+        ketersediaanAir: 'Cukup',
+        status: 'Aktif',
+        statusKesehatan: 'Sehat',
+        skorRisiko: 10,
+        idLogHama: <String>[],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+      SawahModel(
+        id: 'sawah_mock_2',
+        userId: 'user_mock_123',
+        nama: 'Sawah Rengasdengklok',
+        latitude: -6.155,
+        longitude: 107.291,
+        luasHektar: 2.0,
+        jenisTanaman: 'Padi Ciherang',
+        tanggalTanam: DateTime.now().subtract(const Duration(days: 80)),
+        tanggalPanenExpected: DateTime.now().add(const Duration(days: 35)),
+        umurTanamanHari: 80,
+        kelembaban: 50.0,
+        ph: 5.8,
+        temperatureCelsius: 30.0,
+        jenisAirTanah: 'Tadah Hujan',
+        ketersediaanAir: 'Kurang',
+        status: 'Aktif',
+        statusKesehatan: 'Risiko',
+        skorRisiko: 45,
+        idLogHama: <String>['hama_mock_1'],
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      )
+    ];
   }
 
   Future<void> addSawah(SawahModel sawah) async {
@@ -119,42 +141,32 @@ class HamaNotifier extends StateNotifier<List<HamaModel>> {
   }
 
   Future<void> fetchHama() async {
-    final api = ApiService();
-    final res = await api.getHama();
-    if (res['status'] == 'success') {
-      final List data = res['data'] ?? [];
-      state = data.map((json) {
-        final solusiRaw = json['solusi'];
-        List<String> solusiList = [];
-        if (solusiRaw is List) {
-          solusiList = solusiRaw.map((e) => e.toString()).toList();
-        }
-        final now = DateTime.now();
-        return HamaModel(
-          id: json['id'].toString(),
-          sawahId: json['sawah_id'].toString(),
-          userId: json['user_id'].toString(),
-          pathFoto: json['path_foto'] ?? '',
-          urlFoto: json['url_foto'] ?? '',
-          namaHama: json['nama_hama'] ?? 'Tidak Diketahui',
-          confidence: double.tryParse(json['confidence'].toString()) ?? 0.0,
-          tingkatRisiko: json['tingkat_risiko'] ?? 'RENDAH',
-          deskripsi: json['deskripsi'] ?? '',
-          solusi: solusiList,
-          pestsidaRekomendasi: json['pestsida_rekomendasi'] ?? 'N/A',
-          dosasiPestisida: json['dosasi_pestisida'] ?? '0',
-          unitDosis: json['unit_dosis'] ?? 'N/A',
-          waktuAplikasi: json['waktu_aplikasi'] ?? 'N/A',
-          detectedAt: DateTime.tryParse(json['detected_at'] ?? '') ?? now,
-          resolved: (json['resolved'] == 1 || json['resolved'] == true),
-          resolvedAt: json['resolved_at'] != null
-              ? DateTime.tryParse(json['resolved_at'])
-              : null,
-          createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? now,
-          updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? now,
-        );
-      }).toList();
-    }
+    // Simulasi loading & mencegah error state modifikasi saat build
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Menggunakan Mock Data Hama
+    state = [
+      HamaModel(
+        id: 'hama_mock_1',
+        sawahId: 'sawah_mock_2',
+        userId: 'user_mock_123',
+        pathFoto: '',
+        urlFoto: '',
+        namaHama: 'Wereng Cokelat',
+        confidence: 0.89,
+        tingkatRisiko: 'SEDANG',
+        deskripsi: 'Ditemukan wereng cokelat di pangkal batang.',
+        solusi: <String>['Keringkan sawah', 'Semprot insektisida'],
+        pestsidaRekomendasi: 'Pimetrozin',
+        dosasiPestisida: '2',
+        unitDosis: 'gr/L',
+        waktuAplikasi: 'Pagi Hari',
+        detectedAt: DateTime.now().subtract(const Duration(days: 2)),
+        resolved: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      )
+    ];
   }
 
   Future<void> addScan(HamaModel scan) async {
@@ -214,14 +226,28 @@ class PanenCatatanNotifier extends StateNotifier<List<PanenCatatanModel>> {
   }
 
   Future<void> fetchPanen() async {
-    final api = ApiService();
-    final res = await api.getPanen();
-    if (res['status'] == 'success') {
-      final List data = res['data'] ?? [];
-      state = data
-          .map((json) => PanenCatatanModel.fromJson(json as Map<String, dynamic>))
-          .toList();
-    }
+    // Simulasi loading & mencegah error state modifikasi saat build
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Menggunakan Mock Data Panen
+    state = [
+      PanenCatatanModel(
+        id: 'panen_mock_1',
+        sawahId: 'sawah_mock_1',
+        userId: 'user_mock_123',
+        tanggalPanen: DateTime.now().subtract(const Duration(days: 120)),
+        hasilPanenKg: 8500.0,
+        hasilPerHektar: 5666.67,
+        luasHektar: 1.5,
+        kualitasGabah: 'GKP',
+        kadarAir: 22.0,
+        hargaJualPerKg: 6500,
+        totalNilaiPanen: 55250000,
+        catatan: 'Panen musim lalu',
+        metodePanen: 'Combine Harvester',
+        createdAt: DateTime.now(),
+      )
+    ];
   }
 
   Future<bool> addPanen(PanenCatatanModel panen) async {

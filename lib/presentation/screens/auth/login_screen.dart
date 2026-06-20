@@ -4,7 +4,7 @@ import '../../../core/constants/app_constants.dart';
 import '../home/dashboard_screen.dart';
 import '../admin/admin_dashboard_screen.dart';
 import 'register_screen.dart';
-import '../../../data/services/api_service.dart';
+// import '../../../data/services/api_service.dart';
 import '../../../data/models/user_model.dart';
 import '../../providers/user_provider.dart';
 
@@ -69,29 +69,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       return;
     }
 
-    final apiService = ApiService();
-    final response = await apiService.login(email, password);
-
-    if (response['status'] == 'success') {
-      final userData = response['data'];
-      final userModel = UserModel(
-        uid: userData['id'].toString(),
-        name: userData['name'],
-        email: userData['email'],
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      ref.read(currentUserProvider.notifier).setUser(userModel);
-      _goToDashboard();
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['message'] ?? 'Login gagal'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
+    // Menggunakan Mock Login karena kita memakai Firebase Mock
+    final userModel = UserModel(
+      uid: 'user_mock_123',
+      name: 'Petani Karawang',
+      email: email,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    ref.read(currentUserProvider.notifier).setUser(userModel);
+    _goToDashboard();
   }
 
   void _goToAdminDashboard() {
