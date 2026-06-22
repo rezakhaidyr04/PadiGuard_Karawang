@@ -481,8 +481,8 @@ class HomeTab extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: _FeatureCard(
-                          emoji: '🧮',
-                          title: 'Kalkulator Panen',
+                          emoji: '🌾',
+                          title: 'Analisis Panen AI',
                           subtitle: 'Prediksi hasil gabah dari data sawah Anda',
                           gradient: const LinearGradient(
                             colors: [Color(0xFF1565C0), Color(0xFF0D47A1)],
