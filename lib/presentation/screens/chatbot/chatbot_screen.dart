@@ -150,6 +150,10 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen>
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => ref.read(currentTabProvider.notifier).state = 0,
+      ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(height: 1, color: AppColors.border),

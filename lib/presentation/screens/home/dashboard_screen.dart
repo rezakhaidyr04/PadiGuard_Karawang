@@ -327,46 +327,49 @@ class HomeTab extends ConsumerWidget {
                 children: [
                   _sectionTitle('Ringkasan Pertanian'),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          value: '$activeFieldsCount',
-                          label: 'Sawah\nAktif',
-                          emoji: '🌾',
-                          color: AppColors.primary,
-                          onTap: () =>
-                              ref.read(currentTabProvider.notifier).state = 1,
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _StatCard(
+                            value: '$activeFieldsCount',
+                            label: 'Sawah\nAktif',
+                            emoji: '🌾',
+                            color: AppColors.primary,
+                            onTap: () =>
+                                ref.read(currentTabProvider.notifier).state = 1,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _StatCard(
-                          value: '${avgHealth.toStringAsFixed(0)}%',
-                          label: healthLabel,
-                          emoji: '💚',
-                          color: healthColor,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _StatCard(
+                            value: '${avgHealth.toStringAsFixed(0)}%',
+                            label: healthLabel,
+                            emoji: '💚',
+                            color: healthColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _StatCard(
-                          value: pestRisk,
-                          label: 'Risiko\nHama',
-                          emoji: pestRisk == 'Rendah' ? '🛡️' : '⚠️',
-                          color: pestColor,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _StatCard(
+                            value: pestRisk,
+                            label: 'Risiko\nHama',
+                            emoji: pestRisk == 'Rendah' ? '🛡️' : '⚠️',
+                            color: pestColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _StatCard(
-                          value: '${totalExpectedYield.toStringAsFixed(1)}T',
-                          label: 'Est.\nPanen',
-                          emoji: '📦',
-                          color: AppColors.accent,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _StatCard(
+                            value: '${totalExpectedYield.toStringAsFixed(1)}T',
+                            label: 'Est.\nPanen',
+                            emoji: '📦',
+                            color: AppColors.accent,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -133,9 +133,13 @@ class _DiseaseDetectionScreenState extends ConsumerState<DiseaseDetectionScreen>
             // ─── Header ──────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(8, 16, 20, 0),
                 child: Row(
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => ref.read(currentTabProvider.notifier).state = 0,
+                    ),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

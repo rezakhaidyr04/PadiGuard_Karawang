@@ -65,27 +65,35 @@ class SawahScreen extends ConsumerWidget {
             // ─── Header ────────────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(8, 16, 20, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Text('Manajemen Sawah 🌾',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                              fontFamily: 'Poppins',
-                            )),
-                        SizedBox(height: 2),
-                        Text('Kelola semua lahan pertanian Anda',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                              fontFamily: 'Inter',
-                            )),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => ref.read(currentTabProvider.notifier).state = 0,
+                        ),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Manajemen Sawah 🌾',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                  fontFamily: 'Poppins',
+                                )),
+                            SizedBox(height: 2),
+                            Text('Kelola semua lahan pertanian Anda',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                  fontFamily: 'Inter',
+                                )),
+                          ],
+                        ),
                       ],
                     ),
                     ElevatedButton.icon(

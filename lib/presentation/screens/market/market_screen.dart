@@ -31,6 +31,10 @@ class MarketScreen extends ConsumerWidget {
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           titleSpacing: 16,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => ref.read(currentTabProvider.notifier).state = 0,
+          ),
           title: const Text(
             'Pasar & Harga Gabah 🌾',
             style:
