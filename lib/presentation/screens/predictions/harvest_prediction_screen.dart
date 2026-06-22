@@ -704,37 +704,52 @@ class _CircularScoreCard extends StatelessWidget {
                   fontFamily: 'Inter')),
           const SizedBox(height: 14),
           SizedBox(
-            width: 84,
-            height: 84,
+            width: 96,
+            height: 96,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(
-                  value: value / 100,
-                  strokeWidth: 7,
-                  color: color,
-                  backgroundColor: AppColors.border,
+                SizedBox(
+                  width: 96,
+                  height: 96,
+                  child: CircularProgressIndicator(
+                    value: value / 100,
+                    strokeWidth: 8,
+                    color: color,
+                    backgroundColor: AppColors.border,
+                  ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '$value$suffix',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                          fontFamily: 'Poppins'),
-                    ),
-                    Text(
-                      sublabel,
-                      style: TextStyle(
-                          fontSize: 9,
-                          color: color,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Inter'),
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '$value$suffix',
+                          style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                              fontFamily: 'Poppins'),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          sublabel,
+                          style: TextStyle(
+                              fontSize: 10,
+                              color: color,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Inter'),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
