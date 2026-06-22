@@ -230,15 +230,18 @@ class _HarvestPredictionScreenState
           child: Container(height: 1, color: AppColors.border),
         ),
       ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        children: [
-            // Sawah dropdown selector
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Sawah dropdown selector
+              Container(
+              height: 54,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -272,14 +275,13 @@ class _HarvestPredictionScreenState
                         ref.read(selectedSawahIdProvider.notifier).state = v,
                   ),
                 ),
-              ),
             ),
             const SizedBox(height: 18),
 
-            // Main prediction card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(22),
+              // Main prediction card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 gradient: AppColors.lushGradient,
                 borderRadius: BorderRadius.circular(22),
@@ -411,6 +413,7 @@ class _HarvestPredictionScreenState
                           fontSize: 12,
                           fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
+                    minimumSize: Size.zero, // Mencegah bentrok dengan double.infinity dari AppTheme
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
@@ -425,7 +428,9 @@ class _HarvestPredictionScreenState
             const SizedBox(height: 14),
             _PanenHistoryList(sawahId: sawah.id),
             const SizedBox(height: 30),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -783,8 +788,12 @@ class _PanenHistoryList extends ConsumerWidget {
       );
     }
 
-    return Column(
-      children: filtered.map((p) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final p = filtered[index];
         final date =
             '${p.tanggalPanen.day}/${p.tanggalPanen.month}/${p.tanggalPanen.year}';
         final hasilPerHa = p.hasilPerHektar > 0
@@ -908,7 +917,7 @@ class _PanenHistoryList extends ConsumerWidget {
             ],
           ),
         );
-      }).toList(),
+      },
     );
   }
 }
